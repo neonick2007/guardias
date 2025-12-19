@@ -39,11 +39,9 @@ class GuardReportSystem {
         const tomorrow = new Date(now);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        // Fecha y hora actual para entrada
         document.getElementById('entryDate').value = now.toISOString().split('T')[0];
         document.getElementById('entryTime').value = "08:00";
         
-        // Fecha de mañana y hora para salida
         document.getElementById('exitDate').value = tomorrow.toISOString().split('T')[0];
         document.getElementById('exitTime').value = "08:00";
     }
@@ -117,28 +115,34 @@ class GuardReportSystem {
     }
 }
 
-// Función global para generar WhatsApp (Cargos en blanco al final)
-function sendWS(id) {
-    const r = system.records.find(rec => rec.id === id);
-    if(!r) return;
+// HACEMOS LA INSTANCIA GLOBAL PARA QUE EL HTML LA VEA
+window.system = new GuardReportSystem();
 
-    const mensaje = `🖋 *REPORTE DE ASISTENCIA A GUARDIA DE COLABORACIÓN* 🖋%0A%0A` +
-        `📌 *ESTACION:* ${r.estacion}%0A` +
-        `📌 *JERARQUÍA:* ${r.jerarquia}%0A` +
-        `*NOMBRES:* ${r.nombre}%0A%0A` +
-        `📌 *ENTRADA:* ${r.fecha_entrada} | ${r.hora_entrada} HLV%0A` +
-        `📌 *SALIDA:* ${r.fecha_salida} | ${r.hora_salida} HLV%0A` +
-        `📌 *SECCIÓN DE GUARDIA:* "${r.seccion}"%0A` +
-        `📌 *OBSERVACIONES:* ${r.observaciones}%0A%0A` +
-        `▶️ _Oficial de Comando: _%0A` +
-        `▶️ _Oficial de los Servicios: _%0A` +
-        `▶️ _Jefe de Sección: _%0A%0A` +
-        `🚨 *Disciplina y Abnegación*`;
+// FUNCIÓN DE WHATSAPP MEJORADA
+function sendWS(id) {
+    // Buscamos en window.system
+    const r = window.system.records.find(rec => rec.id === id);
+    
+    if(!r) {
+        console.error("Registro no encontrado para el ID:", id);
+        return;
+    }
+
+    const mensaje = encodeURIComponent(`🖋 *REPORTE DE ASISTENCIA A GUARDIA DE COLABORACIÓN* 🖋\n\n` +
+        `📌 *ESTACION:* ${r.estacion}\n` +
+        `📌 *JERARQUÍA:* ${r.jerarquia}\n` +
+        `*NOMBRES:* ${r.nombre}\n\n` +
+        `📌 *ENTRADA:* ${r.fecha_entrada} | ${r.hora_entrada} HLV\n` +
+        `📌 *SALIDA:* ${r.fecha_salida} | ${r.hora_salida} HLV\n\n` +
+        `📌 *SECCIÓN DE GUARDIA:* "${r.seccion}"\n` +
+        `📌 *OBSERVACIONES:* ${r.observaciones}\n\n` +
+        `▶️ _Oficial de Comando: _\n` +
+        `▶️ _Oficial de los Servicios: _\n` +
+        `▶️ _Jefe de Sección: _\n\n` +
+        `🚨 *Disciplina y Abnegación*`);
 
     window.open(`https://wa.me/?text=${mensaje}`, '_blank');
 }
-
-const system = new GuardReportSystem();
 
 async function logout() { 
     await supabaseClient.auth.signOut(); 
@@ -148,6 +152,6 @@ async function logout() {
 async function delRec(id) { 
     if(confirm("¿Seguro que desea eliminar este registro de la bitácora?")) {
         await supabaseClient.from('reportes').delete().eq('id', id);
-        system.loadRecords();
+        window.system.loadRecords();
     } 
 }
