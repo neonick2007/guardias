@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel - Bomberos de Valencia</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #1a1a1a 0%, #d32f2f 100%); margin: 0; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+        header { background: rgba(0, 0, 0, 0.85); color: white; padding: 25px; text-align: center; border-bottom: 5px solid #d32f2f; position: relative; }
+        .main-card { background: white; margin: 20px auto; padding: 2rem; border-radius: 15px; width: 90%; max-width: 850px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+        #welcome-section { text-align: center; margin-bottom: 20px; }
+        #welcome-message { background: #fdf2f2; color: #d32f2f; padding: 12px 25px; border-radius: 50px; display: inline-block; font-weight: bold; border: 1px solid #d32f2f; font-size: 1.1rem; }
+        .rank-update-box { margin-top: 10px; font-size: 0.85rem; }
+        .rank-update-box button { background: none; border: none; color: #ccc; text-decoration: underline; cursor: pointer; }
+        .hidden { display: none; }
+        .btn-logout { position: absolute; top: 25px; right: 25px; background: #d32f2f; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .form-row { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px; }
+        .form-group { flex: 1; min-width: 200px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
+        .records-table { width: 100%; border-collapse: collapse; margin-top: 25px; background: white; }
+        .records-table th { background: #1a1a1a; color: white; padding: 15px; text-align: left; }
+        .records-table td { padding: 12px; border: 1px solid #eee; }
+        .btn-submit { background: #d32f2f; color: white; width: 100%; padding: 15px; border: none; font-weight: bold; cursor: pointer; border-radius: 6px; margin-top: 15px; font-size: 1.1rem; transition: 0.3s; }
+        .btn-submit:hover { background: #b71c1c; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <header>
+        <button onclick="logout()" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Salir</button>
+        <img src="logo_bomberos.png" alt="Logo" style="width: 75px; border-radius: 50%; border: 2px solid white;">
+        <h2 style="margin: 10px 0;">SISTEMA DE REPORTES OPERATIVOS</h2>
+        
+        <div id="welcome-section">
+            <div id="welcome-message"><i class="fas fa-sync fa-spin"></i> Identificando...</div>
+            <div class="rank-update-box">
+                <button onclick="toggleRankEdit()"><i class="fas fa-arrow-up"></i> ¿Cambio de Rango? Actualízalo aquí</button>
+                <div id="rankEditForm" class="hidden" style="margin-top: 10px; background: white; padding: 10px; border-radius: 8px; display: inline-block; border: 1px solid #ccc; color: #333;">
+                    <select id="newHierarchy">
+                        <optgroup label="Oficiales Superiores">
+                            <option value="Coronel">Coronel</option>
+                            <option value="Teniente Coronel">Teniente Coronel</option>
+                            <option value="Mayor">Mayor</option>
+                        </optgroup>
+                        <optgroup label="Oficiales Subalternos">
+                            <option value="Capitán">Capitán</option>
+                            <option value="Primer Teniente">Primer Teniente</option>
+                            <option value="Teniente">Teniente</option>
+                        </optgroup>
+                        <optgroup label="Sub-Oficiales">
+                            <option value="Sargento Mayor">Sargento Mayor</option>
+                            <option value="Sargento Primero">Sargento Primero</option>
+                            <option value="Sargento Segundo">Sargento Segundo</option>
+                        </optgroup>
+                        <optgroup label="Clases y Bomberos">
+                            <option value="Cabo Primero">Cabo Primero</option>
+                            <option value="Cabo Segundo">Cabo Segundo</option>
+                            <option value="Distinguido">Distinguido</option>
+                            <option value="Bombero">Bombero</option>
+                            <option value="Alumno">Alumno</option>
+                        </optgroup>
+                    </select>
+                    <button onclick="updateUserHierarchy()" style="background: #2e7d32; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin-left: 5px; cursor: pointer;">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-card">
+        <h3 style="color: #d32f2f; margin-top: 0;"><i class="fas fa-calendar-check"></i> Registrar Mi Guardia</h3>
+        <form id="guardForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Fecha de Entrada</label>
+                    <input type="date" id="entryDate" name="entryDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Hora de Entrada</label>
+                    <input type="time" id="entryTime" name="entryTime" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-submit"><i class="fas fa-save"></i> GUARDAR EN BITÁCORA</button>
+        </form>
+
+        <hr style="margin: 35px 0; border: 0; border-top: 1px solid #eee;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0;"><i class="fas fa-book"></i> Historial</h3>
+            <button onclick="exportToPDF()" style="background: #1a1a1a; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer;"><i class="fas fa-file-pdf"></i> PDF</button>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="records-table">
+                <thead>
+                    <tr><th>Rango</th><th>Personal</th><th>Fecha y Hora</th><th>Acción</th></tr>
+                </thead>
+                <tbody id="recordsBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

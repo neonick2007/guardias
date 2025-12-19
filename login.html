@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso - Bomberos de Valencia</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #d32f2f 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .auth-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            width: 90%;
+            max-width: 450px;
+            border-top: 10px solid #d32f2f;
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .auth-header img {
+            width: 100px;
+            margin-bottom: 10px;
+        }
+        .auth-header h2 {
+            color: #d32f2f;
+            margin: 5px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .hidden { display: none; }
+        .btn-auth {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+        .btn-login { background-color: #d32f2f; color: white; }
+        .btn-register { background-color: #2e7d32; color: white; }
+        .toggle-link {
+            text-align: center;
+            margin-top: 15px;
+            color: #0056b3;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 0.9rem;
+        }
+        optgroup { font-weight: bold; color: #d32f2f; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <div class="auth-header">
+            <img src="logo_bomberos.png" alt="Logo Bomberos de Valencia">
+            <h2>Sistema de Guardias</h2>
+            <p id="auth-subtitle">Ingrese sus credenciales</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label><i class="fas fa-envelope"></i> Correo Electrónico</label>
+                <input type="email" id="loginEmail" required placeholder="correo@institucion.com">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-lock"></i> Contraseña</label>
+                <input type="password" id="loginPass" required>
+            </div>
+            <button type="submit" class="btn-auth btn-login">INICIAR SESIÓN</button>
+            <div class="toggle-link" onclick="toggleAuth(true)">¿No tienes cuenta? Regístrate aquí</div>
+        </form>
+
+        <form id="registerForm" class="hidden">
+            <div class="form-group">
+                <label><i class="fas fa-user"></i> Nombre y Apellido</label>
+                <input type="text" id="regName" required placeholder="Ej: Juan Pérez">
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-medal"></i> Jerarquía Actual</label>
+                <select id="regHierarchy" required>
+                    <option value="">-- Seleccione su Rango --</option>
+                    <optgroup label="Oficiales Superiores">
+                        <option value="Coronel">Coronel</option>
+                        <option value="Teniente Coronel">Teniente Coronel</option>
+                        <option value="Mayor">Mayor</option>
+                    </optgroup>
+                    <optgroup label="Oficiales Subalternos">
+                        <option value="Capitán">Capitán</option>
+                        <option value="Primer Teniente">Primer Teniente</option>
+                        <option value="Teniente">Teniente</option>
+                    </optgroup>
+                    <optgroup label="Sub-Oficiales">
+                        <option value="Sargento Mayor">Sargento Mayor</option>
+                        <option value="Sargento Primero">Sargento Primero</option>
+                        <option value="Sargento Segundo">Sargento Segundo</option>
+                    </optgroup>
+                    <optgroup label="Clases y Bomberos">
+                        <option value="Cabo Primero">Cabo Primero</option>
+                        <option value="Cabo Segundo">Cabo Segundo</option>
+                        <option value="Distinguido">Distinguido</option>
+                        <option value="Bombero">Bombero</option>
+                        <option value="Alumno">Alumno / Aspirante</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-at"></i> Correo de Registro</label>
+                <input type="email" id="regEmail" required>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-key"></i> Contraseña (mín. 6 caracteres)</label>
+                <input type="password" id="regPass" required minlength="6">
+            </div>
+            <button type="submit" class="btn-auth btn-register">CREAR CUENTA</button>
+            <div class="toggle-link" onclick="toggleAuth(false)">Ya tengo cuenta, volver atrás</div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        function toggleAuth(isRegister) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const subtitle = document.getElementById('auth-subtitle');
+
+            if (isRegister) {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                subtitle.innerText = "Formulario de Autorregistro";
+            } else {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                subtitle.innerText = "Ingrese sus credenciales";
+            }
+        }
+    </script>
+</body>
+</html>
