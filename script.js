@@ -1,4 +1,4 @@
-// script.js
+// script.js - Sistema de Gestión de Guardias
 class GuardReportSystem {
     constructor() {
         this.records = [];
@@ -8,12 +8,10 @@ class GuardReportSystem {
 
     async init() {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        
         if (!session) {
             window.location.href = 'index.html';
             return;
         }
-        
         this.currentUser = session.user;
         this.displayWelcome();
         this.setDefaultDateTime();
@@ -36,10 +34,8 @@ class GuardReportSystem {
         const now = new Date();
         const tomorrow = new Date(now);
         tomorrow.setDate(tomorrow.getDate() + 1);
-
         document.getElementById('entryDate').value = now.toISOString().split('T')[0];
         document.getElementById('entryTime').value = "08:00";
-        
         document.getElementById('exitDate').value = tomorrow.toISOString().split('T')[0];
         document.getElementById('exitTime').value = "08:00";
     }
@@ -59,11 +55,7 @@ class GuardReportSystem {
             user_id: this.currentUser.id
         };
 
-        // El .select() es clave para obtener el ID de inmediato
-        const { data, error } = await supabaseClient
-            .from('reportes')
-            .insert([payload])
-            .select();
+        const { data, error } = await supabaseClient.from('reportes').insert([payload]).select();
 
         if (error) {
             alert("Error al guardar: " + error.message);
@@ -72,10 +64,8 @@ class GuardReportSystem {
             document.getElementById('guardForm').reset();
             this.setDefaultDateTime();
             
-            // Actualizamos la lista local (this.records) antes de llamar a WhatsApp
             await this.loadRecords();
 
-            // Si Supabase nos devolvió el nuevo registro, abrimos WhatsApp de una vez
             if (data && data.length > 0) {
                 sendWS(data[0].id);
             }
@@ -88,10 +78,7 @@ class GuardReportSystem {
             .select('*')
             .order('created_at', { ascending: false });
         
-        if (error) {
-            console.error("Error cargando datos:", error);
-            return;
-        }
+        if (error) return;
         this.records = data || [];
         this.render();
     }
@@ -105,9 +92,7 @@ class GuardReportSystem {
                 <td><strong>${r.jerarquia}</strong><br>${r.nombre}</td>
                 <td>
                     <small><b>ESTACIÓN:</b></small> ${r.estacion}<br>
-                    <small><b>SEC:</b></small> "${r.seccion}"<br>
-                    <small><b>ENTRADA:</b> ${r.fecha_entrada} | ${r.hora_entrada}</small><br>
-                    <small><b>SALIDA:</b> ${r.fecha_salida} | ${r.hora_salida}</small>
+                    <small><b>SEC:</b></small> "${r.seccion}"
                 </td>
                 <td>
                     <button onclick="sendWS('${r.id}')" class="btn-ws">
@@ -124,37 +109,40 @@ class GuardReportSystem {
     }
 }
 
-// INSTANCIA GLOBAL
 window.system = new GuardReportSystem();
 
-// FUNCIÓN DE WHATSAPP
-function sendWS(id) {
-    const r = window.system.records.find(rec => rec.id === id);
+async function sendWS(id) {
+    let r = window.system.records.find(rec => rec.id === id);
     
+    // Si no está en memoria, lo buscamos en la DB (Solución al error de reintento)
     if(!r) {
-        // Reintento automático en caso de desfase de milisegundos
-        window.system.loadRecords().then(() => {
-            const retryR = window.system.records.find(rec => rec.id === id);
-            if(retryR) buildWhatsAppLink(retryR);
-            else alert("Error: No se pudo localizar la información. Por favor, intente de nuevo.");
-        });
-        return;
+        const { data } = await supabaseClient.from('reportes').select('*').eq('id', id).single();
+        r = data;
     }
-    buildWhatsAppLink(r);
+
+    if(r) buildWhatsAppLink(r);
 }
 
 function buildWhatsAppLink(r) {
+    // Separación lógica de Nombre y Apellido (Sin 's')
+    const partes = r.nombre.trim().split(" ");
+    const nombreIndividual = partes[0] || "";
+    const apellidoIndividual = partes.slice(1).join(" ") || "";
+
     const mensaje = `🖋 *REPORTE DE ASISTENCIA A GUARDIA DE COLABORACIÓN* 🖋\n\n` +
         `📌 *ESTACION:* ${r.estacion}\n` +
         `📌 *JERARQUÍA:* ${r.jerarquia}\n` +
-        `*NOMBRES:* ${r.nombre}\n\n` +
-        `📌 *ENTRADA:* ${r.fecha_entrada} | ${r.hora_entrada} HLV\n` +
-        `📌 *SALIDA:* ${r.fecha_salida} | ${r.hora_salida} HLV\n` +
+        `*NOMBRE:* ${nombreIndividual}\n` +
+        `*APELLIDO:* ${apellidoIndividual}\n\n` +
+        `📌 *FECHA ENTRADA:* ${r.fecha_entrada}\n` +
+        `📌 *HORA ENTRADA:* ${r.hora_entrada} HLV\n\n` +
+        `📌 *FECHA SALIDA:* ${r.fecha_salida}\n` +
+        `📌 *HORA SALIDA:* ${r.hora_salida} HLV\n\n` +
         `📌 *SECCIÓN DE GUARDIA:* "${r.seccion}"\n` +
         `📌 *OBSERVACIONES:* ${r.observaciones}\n\n` +
-        `▶️ _Oficial de Comando: _\n` +
-        `▶️ _Oficial de los Servicios: _\n` +
-        `▶️ _Jefe de Sección: _\n\n` +
+        `▶️ _Oficial de Comando:_\n` +
+        `▶️ _Oficial de los Servicios:_\n` +
+        `▶️ _Jefe de Sección:_\n\n` +
         `🚨 *Disciplina y Abnegación*`;
 
     window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
