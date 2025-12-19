@@ -7,7 +7,7 @@ class GuardReportSystem {
     }
 
     async init() {
-        // Verificar sesión de usuario
+        // Verificar sesión de usuario en Supabase
         const { data: { session } } = await supabaseClient.auth.getSession();
         
         if (!session) {
@@ -19,7 +19,7 @@ class GuardReportSystem {
         this.displayWelcome();
         this.setDefaultDateTime();
         
-        // Escuchar el envío del formulario
+        // Escuchar el envío del formulario de guardia
         document.getElementById('guardForm')?.addEventListener('submit', (e) => {
             e.preventDefault();
             this.addRecord();
@@ -39,6 +39,7 @@ class GuardReportSystem {
         const tomorrow = new Date(now);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
+        // Formatear fechas para los inputs (YYYY-MM-DD)
         document.getElementById('entryDate').value = now.toISOString().split('T')[0];
         document.getElementById('entryTime').value = "08:00";
         
@@ -115,35 +116,40 @@ class GuardReportSystem {
     }
 }
 
-// HACEMOS LA INSTANCIA GLOBAL PARA QUE EL HTML LA VEA
+// 1. CREAR LA INSTANCIA GLOBAL (Crucial para que el botón funcione)
 window.system = new GuardReportSystem();
 
-// FUNCIÓN DE WHATSAPP MEJORADA
+// 2. FUNCIÓN DE WHATSAPP GLOBAL
 function sendWS(id) {
-    // Buscamos en window.system
+    // Busca los datos en la instancia global
     const r = window.system.records.find(rec => rec.id === id);
     
     if(!r) {
-        console.error("Registro no encontrado para el ID:", id);
+        alert("No se encontró la información del reporte.");
         return;
     }
 
-    const mensaje = encodeURIComponent(`🖋 *REPORTE DE ASISTENCIA A GUARDIA DE COLABORACIÓN* 🖋\n\n` +
-        `📌 *ESTACION:* ${r.estacion}\n` +
-        `📌 *JERARQUÍA:* ${r.jerarquia}\n` +
-        `*NOMBRES:* ${r.nombre}\n\n` +
-        `📌 *ENTRADA:* ${r.fecha_entrada} | ${r.hora_entrada} HLV\n` +
-        `📌 *SALIDA:* ${r.fecha_salida} | ${r.hora_salida} HLV\n\n` +
-        `📌 *SECCIÓN DE GUARDIA:* "${r.seccion}"\n` +
-        `📌 *OBSERVACIONES:* ${r.observaciones}\n\n` +
-        `▶️ _Oficial de Comando: _\n` +
-        `▶️ _Oficial de los Servicios: _\n` +
-        `▶️ _Jefe de Sección: _\n\n` +
-        `🚨 *Disciplina y Abnegación*`);
+    // Construcción del mensaje con saltos de línea y codificación segura
+    const textoReporte = `🖋 *REPORTE DE ASISTENCIA A GUARDIA DE COLABORACIÓN* 🖋\n\n` +
+        `▶️ _Estación:_ ${r.estacion}\n` +
+        `▶️ _Jerarquía:_ ${r.jerarquia}\n` +
+        `▶️ _Nombres:_ ${r.nombre}\n\n` +
+        `▶️ _Fecha Entrada:_ ${r.fecha_entrada}\n` +
+        `▶️ _Hora Entrada:_ ${r.hora_entrada} HLV\n\n` +
+        `▶️ _Fecha Salida:_ ${r.fecha_salida}\n` +
+        `▶️ _Hora Salida:_ ${r.hora_salida} HLV\n\n` +
+        `▶️ _Sección de Guardia:_ "${r.seccion}"\n` +
+        `▶️ _Observaciones:_ ${r.observaciones}\n\n` +
+        `▶️ _Oficial de Comando:_ \n` +
+        `▶️ _Oficial de los Servicios:_ \n` +
+        `▶️ _Jefe de Sección:_ \n\n` +
+        `🚨 *Disciplina y Abnegación*`;
 
-    window.open(`https://wa.me/?text=${mensaje}`, '_blank');
+    const url = `https://wa.me/?text=${encodeURIComponent(textoReporte)}`;
+    window.open(url, '_blank');
 }
 
+// 3. FUNCIONES DE APOYO GLOBALES
 async function logout() { 
     await supabaseClient.auth.signOut(); 
     window.location.href = 'index.html'; 
@@ -151,7 +157,7 @@ async function logout() {
 
 async function delRec(id) { 
     if(confirm("¿Seguro que desea eliminar este registro de la bitácora?")) {
-        await supabaseClient.from('reportes').delete().eq('id', id);
-        window.system.loadRecords();
+        const { error } = await supabaseClient.from('reportes').delete().eq('id', id);
+        if(!error) window.system.loadRecords();
     } 
 }
