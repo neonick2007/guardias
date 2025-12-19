@@ -1,44 +1,62 @@
-// auth.js
+// auth.js - Gestión de Acceso y Registro de Personal
 
-// REGISTRO DE BOMBEROS
+// 1. FUNCIÓN DE REGISTRO
 document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    
     const email = document.getElementById('regEmail').value;
     const password = document.getElementById('regPass').value;
-    const nombre = document.getElementById('regName').value;
-    const jerarquia = document.getElementById('regHierarchy').value;
+    const full_name = document.getElementById('regName').value;
+    const hierarchy = document.getElementById('regHierarchy').value;
 
+    // Registrar en Supabase Auth guardando jerarquía y nombre en metadata
     const { data, error } = await supabaseClient.auth.signUp({
-        email,
-        password,
+        email: email,
+        password: password,
         options: {
-            data: { full_name: nombre, hierarchy: jerarquia }
+            data: {
+                full_name: full_name,
+                hierarchy: hierarchy
+            }
         }
     });
 
     if (error) {
-        alert("Error: " + error.message);
+        alert("Error en el registro: " + error.message);
     } else {
-        alert("¡Cuenta creada con éxito! Ahora puedes iniciar sesión.");
-        toggleAuth(false); // Regresa a la vista de login
+        alert("¡Registro exitoso! Ya puede iniciar sesión.");
+        // Volver al formulario de login
+        toggleAuth(false); 
     }
 });
 
-// INICIO DE SESIÓN
+// 2. FUNCIÓN DE INICIO DE SESIÓN (LOGIN)
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPass').value;
 
     const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email,
-        password
+        email: email,
+        password: password
     });
 
     if (error) {
-        alert("Error de acceso: " + error.message);
+        alert("Acceso denegado: " + error.message);
     } else {
-        // Redirige al panel de reportes
+        // Redirigir al panel operativo
         window.location.href = 'panel.html';
     }
 });
+
+// 3. PERSISTENCIA DE SESIÓN (Opcional pero recomendado)
+// Si el usuario ya está logueado y entra al index.html, lo manda directo al panel
+async function checkActiveSession() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session && window.location.pathname.includes('index.html')) {
+        window.location.href = 'panel.html';
+    }
+}
+
+checkActiveSession();
