@@ -62,7 +62,11 @@ class GuardReportSystem {
             user_id: this.currentUser.id
         };
 
-        const { error } = await supabaseClient.from('reportes').insert([payload]);
+        // CORRECCIÓN: Usamos .select() para obtener los datos del registro recién creado
+        const { data, error } = await supabaseClient
+            .from('reportes')
+            .insert([payload])
+            .select();
 
         if (error) {
             alert("Error al guardar: " + error.message);
@@ -70,7 +74,14 @@ class GuardReportSystem {
             alert("✅ Registro guardado exitosamente.");
             document.getElementById('guardForm').reset();
             this.setDefaultDateTime();
+            
+            // Actualizamos la lista primero
             await this.loadRecords();
+
+            // CORRECCIÓN: Ahora llamamos a la función de WhatsApp con el dato que recibimos de Supabase
+            if (data && data.length > 0) {
+                sendWS(data[0].id);
+            }
         }
     }
 
@@ -116,7 +127,7 @@ class GuardReportSystem {
     }
 }
 
-// 1. CREAR LA INSTANCIA GLOBAL (Crucial para que el botón funcione)
+// 1. CREAR LA INSTANCIA GLOBAL
 window.system = new GuardReportSystem();
 
 // 2. FUNCIÓN DE WHATSAPP GLOBAL
@@ -125,11 +136,22 @@ function sendWS(id) {
     const r = window.system.records.find(rec => rec.id === id);
     
     if(!r) {
-        alert("No se encontró la información del reporte.");
+        // Si no lo encuentra por un tema de milisegundos, reintentamos cargando records de nuevo
+        window.system.loadRecords().then(() => {
+            const retryR = window.system.records.find(rec => rec.id === id);
+            if(retryR) {
+                executeWhatsApp(retryR);
+            } else {
+                alert("No se encontró la información del reporte.");
+            }
+        });
         return;
     }
+    executeWhatsApp(r);
+}
 
-    // Construcción del mensaje con saltos de línea y codificación segura
+// Función auxiliar para abrir el link
+function executeWhatsApp(r) {
     const textoReporte = `🖋 *REPORTE DE ASISTENCIA A GUARDIA DE COLABORACIÓN* 🖋\n\n` +
         `▶️ _Estación:_ ${r.estacion}\n` +
         `▶️ _Jerarquía:_ ${r.jerarquia}\n` +
