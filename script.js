@@ -83,46 +83,81 @@ class GuardReportSystem {
         this.render();
     }
 
+    // NUEVA FUNCIÓN: GENERAR REPORTE EXCEL
+    generarReporteGeneral() {
+        if (this.records.length === 0) {
+            alert("No hay registros cargados para exportar.");
+            return;
+        }
+
+        const headers = ["JERARQUIA", "NOMBRE", "ESTACION", "SECCION", "FECHA ENTRADA", "HORA ENTRADA", "FECHA SALIDA", "HORA SALIDA", "NOVEDADES"];
+        
+        const filas = this.records.map(r => [
+            r.jerarquia,
+            r.nombre,
+            r.estacion,
+            r.seccion,
+            r.fecha_entrada,
+            r.hora_entrada,
+            r.fecha_salida,
+            r.hora_salida,
+            `"${r.observaciones.replace(/"/g, '""')}"`
+        ]);
+
+        // Formato con BOM y punto y coma para compatibilidad total con Excel en español
+        let csvContent = "\uFEFF" + headers.join(";") + "\n" + filas.map(f => f.join(";")).join("\n");
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Reporte_General_Guardias_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
     render() {
-    const tbody = document.getElementById('recordsBody');
-    if (!tbody) return;
-    
-    tbody.innerHTML = this.records.map(r => `
-        <tr>
-            <td>
-                <strong>${r.jerarquia}</strong><br>
-                ${r.nombre}
-            </td>
-            <td>
-                <div style="line-height: 1.4;">
-                    <strong><i class="fas fa-map-marker-alt"></i> ${r.estacion}</strong> - <small>SEC: "${r.seccion}"</small><br>
-                    <span style="color: #555; font-size: 0.85rem;">
-                        <i class="far fa-calendar-alt"></i> ${r.fecha_entrada} <br>
-                        <i class="far fa-clock"></i> ${r.hora_entrada} HLV
-                    </span>
-                </div>
-            </td>
-            <td>
-                <button onclick="sendWS('${r.id}')" class="btn-ws">
-                    <i class="fab fa-whatsapp"></i> Reporte
-                </button>
-            </td>
-            <td>
-                <button onclick="delRec('${r.id}')" style="color:#d32f2f; border:none; background:none; cursor:pointer; font-size:1.2em;">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
-}
+        const tbody = document.getElementById('recordsBody');
+        if (!tbody) return;
+        
+        tbody.innerHTML = this.records.map(r => `
+            <tr>
+                <td>
+                    <strong>${r.jerarquia}</strong><br>
+                    ${r.nombre}
+                </td>
+                <td>
+                    <div style="line-height: 1.4;">
+                        <strong><i class="fas fa-map-marker-alt"></i> ${r.estacion}</strong> - <small>SEC: "${r.seccion}"</small><br>
+                        <span style="color: #555; font-size: 0.85rem;">
+                            <i class="far fa-calendar-alt"></i> ${r.fecha_entrada} <br>
+                            <i class="far fa-clock"></i> ${r.hora_entrada} HLV
+                        </span>
+                    </div>
+                </td>
+                <td>
+                    <button onclick="sendWS('${r.id}')" class="btn-ws">
+                        <i class="fab fa-whatsapp"></i> Reporte
+                    </button>
+                </td>
+                <td>
+                    <button onclick="delRec('${r.id}')" style="color:#d32f2f; border:none; background:none; cursor:pointer; font-size:1.2em;">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
 }
 
+// Inicialización global
 window.system = new GuardReportSystem();
 
+// Funciones globales de ayuda
 async function sendWS(id) {
     let r = window.system.records.find(rec => rec.id === id);
     
-    // Si no está en memoria, lo buscamos en la DB (Solución al error de reintento)
     if(!r) {
         const { data } = await supabaseClient.from('reportes').select('*').eq('id', id).single();
         r = data;
@@ -132,7 +167,6 @@ async function sendWS(id) {
 }
 
 function buildWhatsAppLink(r) {
-    // Separación lógica de Nombre y Apellido (Sin 's')
     const partes = r.nombre.trim().split(" ");
     const nombreIndividual = partes[0] || "";
     const apellidoIndividual = partes.slice(1).join(" ") || "";
