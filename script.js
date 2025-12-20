@@ -84,29 +84,37 @@ class GuardReportSystem {
     }
 
     render() {
-        const tbody = document.getElementById('recordsBody');
-        if (!tbody) return;
-        
-        tbody.innerHTML = this.records.map(r => `
-            <tr>
-                <td><strong>${r.jerarquia}</strong><br>${r.nombre}</td>
-                <td>
-                    <small><b>ESTACIÓN:</b></small> ${r.estacion}<br>
-                    <small><b>SEC:</b></small> "${r.seccion}"
-                </td>
-                <td>
-                    <button onclick="sendWS('${r.id}')" class="btn-ws">
-                        <i class="fab fa-whatsapp"></i> Reporte
-                    </button>
-                </td>
-                <td>
-                    <button onclick="delRec('${r.id}')" style="color:#d32f2f; border:none; background:none; cursor:pointer; font-size:1.2em;">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </td>
-            </tr>
-        `).join('');
-    }
+    const tbody = document.getElementById('recordsBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = this.records.map(r => `
+        <tr>
+            <td>
+                <strong>${r.jerarquia}</strong><br>
+                ${r.nombre}
+            </td>
+            <td>
+                <div style="line-height: 1.4;">
+                    <strong><i class="fas fa-map-marker-alt"></i> ${r.estacion}</strong> - <small>SEC: "${r.seccion}"</small><br>
+                    <span style="color: #555; font-size: 0.85rem;">
+                        <i class="far fa-calendar-alt"></i> ${r.fecha_entrada} <br>
+                        <i class="far fa-clock"></i> ${r.hora_entrada} HLV
+                    </span>
+                </div>
+            </td>
+            <td>
+                <button onclick="sendWS('${r.id}')" class="btn-ws">
+                    <i class="fab fa-whatsapp"></i> Reporte
+                </button>
+            </td>
+            <td>
+                <button onclick="delRec('${r.id}')" style="color:#d32f2f; border:none; background:none; cursor:pointer; font-size:1.2em;">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
 }
 
 window.system = new GuardReportSystem();
