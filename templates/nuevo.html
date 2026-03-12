@@ -1,0 +1,428 @@
+<!-- 
+ =============================================================================
+ NUEVO.HTML - FORMULARIO PARA CREAR NUEVO VOLUNTARIO
+ =============================================================================
+ 
+ Esta plantilla genera el formulario para crear un nuevo voluntario.
+ 
+ Autor: Sistema de Gestión de Voluntarios - Cuerpo de Bomberos de Valencia
+ Versión: 2.0 (CON LOGO INSTITUCIONAL)
+ Fecha: Marzo 2026
+ =============================================================================
+-->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Voluntario - Bomberos Valencia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #d32f2f 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Header con logo */
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .logo-container {
+            background: linear-gradient(135deg, #1e3c72 0%, #d32f2f 100%);
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .logo-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: brightness(0) invert(1); /* Hace el logo blanco */
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-text h1 {
+            color: #1e3c72;
+            margin-bottom: 5px;
+            font-size: 2em;
+        }
+
+        .header-text p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .campo {
+            margin-bottom: 15px;
+        }
+
+        .campo label {
+            display: block;
+            margin-bottom: 5px;
+            color: #1e3c72;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .campo input, 
+        .campo select, 
+        .campo textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            background: #fafafa;
+        }
+
+        .campo input:focus, 
+        .campo select:focus, 
+        .campo textarea:focus {
+            outline: none;
+            border-color: #d32f2f;
+            background: white;
+        }
+
+        .campo textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .campo-full {
+            grid-column: 1 / -1;
+        }
+
+        small {
+            color: #666;
+            display: block;
+            margin-top: 5px;
+            font-size: 0.85em;
+        }
+
+        .acciones {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            font-size: 0.9em;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #d32f2f;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #b71c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(211, 47, 47, 0.3);
+        }
+
+        .btn-secondary {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #0f2b4f;
+            transform: translateY(-2px);
+        }
+
+        .btn-cancel {
+            background: #666;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #444;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header con logo -->
+        <div class="header">
+            <div class="logo-container">
+                <img src="/static/img/logo.png" alt="Logo Bomberos Valencia">
+            </div>
+            <div class="header-text">
+                <h1>➕ NUEVO VOLUNTARIO</h1>
+                <p>Complete todos los campos del formulario</p>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <form action="/api/voluntarios" method="POST" enctype="multipart/form-data">
+                <div class="form-grid">
+                    <!-- CÓDIGO - Obligatorio -->
+                    <div class="campo">
+                        <label>CÓDIGO <span style="color: #d32f2f;">*</span></label>
+                        <input type="text" name="codigo" placeholder="Ej: 08-10" required>
+                    </div>
+
+                    <!-- INSTITUCIÓN -->
+                    <div class="campo">
+                        <label>INSTITUCIÓN</label>
+                        <input type="text" name="institucion" value="BOMBEROS VALENCIA">
+                    </div>
+
+                    <!-- JERARQUÍA -->
+                    <div class="campo">
+                        <label>JERARQUÍA</label>
+                        <select name="jerarquia">
+                            <option value="">SELECCIONAR...</option>
+                            <option value="BOMBERO">BOMBERO</option>
+                            <option value="DISTINGUIDO">DISTINGUIDO</option>
+                            <option value="CABO SEGUNDO">CABO SEGUNDO</option>
+                            <option value="CABO PRIMERO">CABO PRIMERO</option>
+                            <option value="SARGENTO SEGUNDO">SARGENTO SEGUNDO</option>
+                            <option value="SARGENTO PRIMERO">SARGENTO PRIMERO</option>
+                            <option value="SARGENTO MAYOR">SARGENTO MAYOR</option>
+                            <option value="TENIENTE">TENIENTE</option>
+                            <option value="PRIMER TENIENTE">PRIMER TENIENTE</option>
+                            <option value="CAPITÁN">CAPITÁN</option>
+                            <option value="MAYOR">MAYOR</option>
+                            <option value="TENIENTE CORONEL">TENIENTE CORONEL</option>
+                            <option value="CORONEL">CORONEL</option>
+                        </select>
+                    </div>
+
+                    <!-- NOMBRE Y APELLIDO - Obligatorio -->
+                    <div class="campo">
+                        <label>NOMBRE Y APELLIDO <span style="color: #d32f2f;">*</span></label>
+                        <input type="text" name="nombre_apellido" placeholder="Nombre completo" required>
+                    </div>
+
+                    <!-- CÉDULA -->
+                    <div class="campo">
+                        <label>CÉDULA</label>
+                        <input type="text" name="cedula" placeholder="Ej: 12345678">
+                    </div>
+
+                    <!-- FECHA NACIMIENTO -->
+                    <div class="campo">
+                        <label>FECHA DE NACIMIENTO</label>
+                        <input type="date" name="fecha_nacimiento">
+                    </div>
+
+                    <!-- EDAD -->
+                    <div class="campo">
+                        <label>EDAD</label>
+                        <input type="number" name="edad">
+                    </div>
+
+                    <!-- FECHA INGRESO 1 -->
+                    <div class="campo">
+                        <label>FECHA DE INGRESO 1</label>
+                        <input type="date" name="fecha_ingreso_1">
+                    </div>
+
+                    <!-- FECHA EGRESO 1 -->
+                    <div class="campo">
+                        <label>FECHA DE EGRESO 1</label>
+                        <input type="date" name="fecha_egreso_1">
+                    </div>
+
+                    <!-- FECHA INGRESO 2 -->
+                    <div class="campo">
+                        <label>FECHA DE INGRESO 2</label>
+                        <input type="date" name="fecha_ingreso_2">
+                    </div>
+
+                    <!-- FECHA EGRESO 2 -->
+                    <div class="campo">
+                        <label>FECHA DE EGRESO 2</label>
+                        <input type="date" name="fecha_egreso_2">
+                    </div>
+
+                    <!-- ÚLTIMA FECHA INGRESO -->
+                    <div class="campo">
+                        <label>ÚLTIMA FECHA DE INGRESO</label>
+                        <input type="date" name="ultima_fecha_ingreso">
+                    </div>
+
+                    <!-- TOTAL AÑOS VOL -->
+                    <div class="campo">
+                        <label>TOTAL AÑOS VOLUNTARIO</label>
+                        <input type="number" name="total_anos_vol">
+                    </div>
+
+                    <!-- NIVEL ACADÉMICO -->
+                    <div class="campo">
+                        <label>NIVEL ACADÉMICO</label>
+                        <select name="nivel_academico">
+                            <option value="">SELECCIONAR...</option>
+                            <option value="BCH">BCH</option>
+                            <option value="TSU">TSU</option>
+                            <option value="PROF">PROF</option>
+                            <option value="ESP">ESP</option>
+                            <option value="MAG">MAG</option>
+                            <option value="DOC">DOC</option>
+                        </select>
+                    </div>
+
+                    <!-- CARRERA -->
+                    <div class="campo">
+                        <label>CARRERA / ESPECIALIDAD</label>
+                        <input type="text" name="carrera">
+                    </div>
+
+                    <!-- ÚLTIMO ASCENSO -->
+                    <div class="campo">
+                        <label>ÚLTIMO ASCENSO</label>
+                        <input type="text" name="ultimo_ascenso">
+                    </div>
+
+                    <!-- ORDEN GENERAL -->
+                    <div class="campo">
+                        <label>ORDEN GENERAL</label>
+                        <input type="text" name="orden_general">
+                    </div>
+
+                    <!-- CARGO -->
+                    <div class="campo">
+                        <label>CARGO ACTUAL</label>
+                        <input type="text" name="cargo">
+                    </div>
+
+                    <!-- TIPO SANGRE -->
+                    <div class="campo">
+                        <label>TIPO DE SANGRE</label>
+                        <input type="text" name="tipo_sangre" placeholder="Ej: O+">
+                    </div>
+
+                    <!-- TELÉFONO -->
+                    <div class="campo">
+                        <label>TELÉFONO</label>
+                        <input type="text" name="telefono" placeholder="Ej: 04121234567">
+                    </div>
+
+                    <!-- CORREO -->
+                    <div class="campo">
+                        <label>CORREO ELECTRÓNICO</label>
+                        <input type="email" name="correo" placeholder="ejemplo@correo.com">
+                    </div>
+
+                    <!-- TALLA PANTALÓN -->
+                    <div class="campo">
+                        <label>TALLA PANTALÓN</label>
+                        <input type="text" name="talla_pantalon">
+                    </div>
+
+                    <!-- TALLA CAMISA -->
+                    <div class="campo">
+                        <label>TALLA CAMISA</label>
+                        <input type="text" name="talla_camisa">
+                    </div>
+
+                    <!-- TALLA BOTAS -->
+                    <div class="campo">
+                        <label>TALLA BOTAS</label>
+                        <input type="text" name="talla_botas">
+                    </div>
+
+                    <!-- TALLA GORRA -->
+                    <div class="campo">
+                        <label>TALLA GORRA</label>
+                        <input type="text" name="talla_gorra">
+                    </div>
+
+                    <!-- FOTO -->
+                    <div class="campo campo-full">
+                        <label>FOTO DEL VOLUNTARIO</label>
+                        <input type="file" name="foto" accept="image/*">
+                        <small>Formatos permitidos: JPG, JPEG, PNG, GIF</small>
+                    </div>
+
+                    <!-- OBSERVACIONES -->
+                    <div class="campo campo-full">
+                        <label>OBSERVACIONES</label>
+                        <textarea name="observaciones" placeholder="Notas adicionales..."></textarea>
+                    </div>
+                </div>
+
+                <div class="acciones">
+                    <a href="/" class="btn btn-cancel">CANCELAR</a>
+                    <button type="submit" class="btn btn-primary">GUARDAR VOLUNTARIO</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

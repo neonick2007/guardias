@@ -1,0 +1,591 @@
+<!-- 
+ =============================================================================
+ FICHA.HTML - PLANTILLA PARA FICHA INDIVIDUAL DE VOLUNTARIO
+ =============================================================================
+ 
+ Esta plantilla genera la ficha imprimible de cada voluntario con formato oficial.
+ 
+ Variables disponibles:
+   - voluntario: Objeto con todos los datos del voluntario
+   - now: Función datetime.now() para mostrar fecha actual
+ 
+ Autor: Sistema de Gestión de Voluntarios - Cuerpo de Bomberos de Valencia
+ Versión: 1.0
+ Fecha: Marzo 2026
+ =============================================================================
+-->
+
+<!DOCTYPE html>
+<!-- Declaración del tipo de documento HTML5 -->
+<html lang="es">
+<!-- lang="es" indica que el contenido está en español -->
+
+<head>
+    <!-- METADATOS - Información sobre la página -->
+    <meta charset="UTF-8"> <!-- Codificación de caracteres UTF-8 (soporta tildes y ñ) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Adaptación a dispositivos móviles -->
+    
+    <!-- Título de la página (aparece en la pestaña del navegador) -->
+    <title>Ficha - {{ voluntario.nombre_apellido }}</title>
+    
+    <!-- ESTILOS CSS -->
+    <style>
+        /* 
+        =====================================================================
+        RESET Y ESTILOS GLOBALES
+        =====================================================================
+        Estos estilos se aplican a toda la página
+        */
+        
+        /* Selector universal (*) - Aplica a todos los elementos */
+        * {
+            margin: 0;      /* Elimina márgenes por defecto */
+            padding: 0;     /* Elimina rellenos por defecto */
+            box-sizing: border-box; /* El padding y border se incluyen en el ancho/alto */
+        }
+        
+        /* Estilos para el cuerpo de la página */
+        body {
+            font-family: 'Arial', sans-serif; /* Fuente principal */
+            background: #f0f0f0; /* Color de fondo gris claro */
+            padding: 20px; /* Espacio alrededor del contenido */
+        }
+        
+        /* 
+        =====================================================================
+        CONTENEDOR PRINCIPAL DE LA FICHA
+        =====================================================================
+        */
+        .ficha-container {
+            max-width: 800px; /* Ancho máximo (no se expande más allá) */
+            margin: 0 auto;   /* Centra horizontalmente (auto en izquierda y derecha) */
+            background: white; /* Fondo blanco */
+            box-shadow: 0 0 20px rgba(0,0,0,0.1); /* Sombra suave alrededor */
+            border-radius: 10px; /* Bordes redondeados */
+            overflow: hidden; /* Evita que el contenido sobresalga de las esquinas redondeadas */
+        }
+        
+        /* 
+        =====================================================================
+        ENCABEZADO DE LA FICHA
+        =====================================================================
+        */
+        .ficha-header {
+            /* Fondo con degradado (azul marino a rojo) */
+            background: linear-gradient(135deg, #1e3c72 0%, #d32f2f 100%);
+            color: white; /* Texto blanco */
+            padding: 30px; /* Espaciado interno */
+            text-align: center; /* Texto centrado */
+            position: relative; /* Para posicionar el ícono de fondo */
+        }
+        
+        /* Pseudo-elemento para el ícono de fondo (🚒) */
+        .ficha-header::before {
+            content: "🚒"; /* Contenido del pseudo-elemento */
+            font-size: 3em; /* Tamaño grande */
+            position: absolute; /* Posicionamiento absoluto */
+            left: 30px; /* Distancia desde la izquierda */
+            top: 50%; /* Centrado vertical */
+            transform: translateY(-50%); /* Ajuste fino para centrado perfecto */
+            opacity: 0.3; /* Transparencia */
+        }
+        
+        .ficha-header h1 {
+            font-size: 1.8em; /* Tamaño de fuente */
+            margin-bottom: 5px; /* Espacio debajo */
+            text-transform: uppercase; /* Texto en mayúsculas */
+            letter-spacing: 2px; /* Espaciado entre letras */
+        }
+        
+        .ficha-header p {
+            opacity: 0.9; /* Ligeramente transparente */
+            font-size: 1.1em;
+        }
+        
+        /* 
+        =====================================================================
+        CUERPO DE LA FICHA
+        =====================================================================
+        */
+        .ficha-body {
+            padding: 30px; /* Espaciado interno */
+        }
+        
+        /* 
+        =====================================================================
+        SECCIÓN DE PERFIL (FOTO + INFORMACIÓN PRINCIPAL)
+        =====================================================================
+        */
+        .profile-section {
+            display: flex; /* Diseño flexible (elementos uno al lado del otro) */
+            gap: 30px; /* Espacio entre elementos */
+            margin-bottom: 30px; /* Espacio debajo */
+            padding-bottom: 30px; /* Relleno inferior */
+            border-bottom: 3px solid #eee; /* Línea separadora */
+        }
+        
+        .photo-container {
+            flex-shrink: 0; /* Evita que la foto se encoja */
+        }
+        
+        /* Estilo para imágenes reales */
+        .photo-container img {
+            width: 200px; /* Ancho fijo */
+            height: 250px; /* Alto fijo */
+            object-fit: cover; /* La imagen cubre todo el espacio (puede recortarse) */
+            border: 5px solid #1e3c72; /* Borde azul */
+            border-radius: 10px; /* Bordes redondeados */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); /* Sombra */
+        }
+        
+        /* Estilo para cuando no hay foto (placeholder) */
+        .photo-placeholder {
+            width: 200px;
+            height: 250px;
+            background: #e0e0e0; /* Fondo gris */
+            border: 5px dashed #999; /* Borde punteado */
+            border-radius: 10px;
+            display: flex; /* Centro el contenido (el ícono) */
+            align-items: center;
+            justify-content: center;
+            font-size: 4em; /* Tamaño del ícono */
+            color: #999;
+        }
+        
+        .main-info {
+            flex: 1; /* Ocupa el espacio restante */
+        }
+        
+        /* 
+        =====================================================================
+        ELEMENTOS DE INFORMACIÓN PRINCIPAL
+        =====================================================================
+        */
+        .jerarquia-badge {
+            display: inline-block; /* Se comporta como bloque pero en línea */
+            background: #d32f2f; /* Fondo rojo */
+            color: white;
+            padding: 10px 25px; /* Espaciado interno */
+            border-radius: 25px; /* Muy redondeado (forma de píldora) */
+            font-size: 1.3em;
+            font-weight: bold; /* Negrita */
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .name {
+            font-size: 2em;
+            color: #1e3c72; /* Azul marino */
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .codigo {
+            font-size: 1.2em;
+            color: #666;
+            font-family: monospace; /* Fuente monoespaciada (como código) */
+            background: #f0f0f0;
+            padding: 5px 15px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        
+        /* 
+        =====================================================================
+        CUADRÍCULA DE INFORMACIÓN
+        =====================================================================
+        */
+        .info-grid {
+            display: grid; /* Diseño de cuadrícula */
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Columnas responsivas */
+            gap: 20px; /* Espacio entre celdas */
+        }
+        
+        /* Grupo de información (cada recuadro) */
+        .info-group {
+            background: #f8f9fa; /* Fondo gris muy claro */
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #1e3c72; /* Borde izquierdo azul */
+        }
+        
+        /* Grupo que ocupa todo el ancho */
+        .info-group.full-width {
+            grid-column: 1 / -1; /* Desde primera a última columna */
+        }
+        
+        /* Etiqueta del campo */
+        .info-label {
+            font-size: 0.85em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        /* Valor del campo */
+        .info-value {
+            font-size: 1.1em;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        /* Título de sección (divide las partes de la ficha) */
+        .section-title {
+            grid-column: 1 / -1; /* Ocupa todo el ancho */
+            font-size: 1.3em;
+            color: #1e3c72;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #1e3c72;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Caja especial para observaciones */
+        .observaciones-box {
+            background: #fff3cd; /* Fondo amarillo claro */
+            border: 1px solid #ffc107; /* Borde amarillo */
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        /* 
+        =====================================================================
+        CONTROLES DE IMPRESIÓN (BOTONES)
+        =====================================================================
+        */
+        .print-controls {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .btn-print {
+            background: #d32f2f; /* Rojo */
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 50px; /* Muy redondeado */
+            cursor: pointer; /* Manita al pasar el mouse */
+            transition: all 0.3s; /* Transición suave para hover */
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .btn-print:hover { /* Cuando el mouse está encima */
+            background: #b71c1c; /* Rojo más oscuro */
+            transform: translateY(-2px); /* Se eleva ligeramente */
+            box-shadow: 0 5px 20px rgba(211, 47, 47, 0.4); /* Sombra más intensa */
+        }
+        
+        .btn-print.secondary { /* Botón secundario (cerrar) */
+            background: #666;
+            margin-left: 10px;
+        }
+        
+        .btn-print.secondary:hover {
+            background: #444;
+        }
+        
+        /* 
+        =====================================================================
+        ESTILOS DE IMPRESIÓN
+        =====================================================================
+        @media print se aplica solo cuando se imprime la página
+        */
+        @media print {
+            body {
+                background: white; /* Fondo blanco al imprimir */
+                padding: 0;
+            }
+            
+            .print-controls {
+                display: none !important; /* Ocultar botones al imprimir */
+            }
+            
+            .ficha-container {
+                box-shadow: none; /* Sin sombra al imprimir */
+                max-width: 100%;
+            }
+            
+            .ficha-header {
+                background: #1e3c72 !important; /* Forzar color de fondo */
+                -webkit-print-color-adjust: exact; /* Mantener colores al imprimir */
+                print-color-adjust: exact;
+            }
+        }
+        
+        /* 
+        =====================================================================
+        CONFIGURACIÓN DE PÁGINA PARA IMPRESIÓN
+        =====================================================================
+        */
+        @page {
+            size: A4; /* Tamaño de papel A4 */
+            margin: 10mm; /* Márgenes de 10mm */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 
+    =========================================================================
+    CONTROLES DE IMPRESIÓN (NO SE IMPRIMEN)
+    =========================================================================
+    -->
+    <div class="print-controls">
+        <button class="btn-print" onclick="window.print()">🖨️ Imprimir Ficha</button>
+        <button class="btn-print secondary" onclick="window.close()">✕ Cerrar</button>
+    </div>
+    
+    <!-- 
+    =========================================================================
+    CONTENEDOR PRINCIPAL DE LA FICHA
+    =========================================================================
+    -->
+    <div class="ficha-container">
+        <!-- 
+        =====================================================================
+        ENCABEZADO
+        =====================================================================
+        -->
+        <div class="ficha-header">
+            <h1>Cuerpo de Bomberos de Valencia</h1>
+            <p>Ficha del Personal Voluntario</p>
+        </div>
+        
+        <!-- 
+        =====================================================================
+        CUERPO DE LA FICHA
+        =====================================================================
+        -->
+        <div class="ficha-body">
+            <!-- 
+            =================================================================
+            SECCIÓN DE PERFIL
+            =================================================================
+            -->
+            <div class="profile-section">
+                <!-- Contenedor de la foto -->
+                <div class="photo-container">
+                    {% if voluntario.foto_path %}
+                        <!-- Si hay foto, la mostramos -->
+                        <img src="/{{ voluntario.foto_path }}" alt="Foto de {{ voluntario.nombre_apellido }}">
+                    {% else %}
+                        <!-- Si no hay foto, mostramos un placeholder -->
+                        <div class="photo-placeholder">📷</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Información principal -->
+                <div class="main-info">
+                    <div class="jerarquia-badge">{{ voluntario.jerarquia or 'Sin Jerarquía' }}</div>
+                    <div class="name">{{ voluntario.nombre_apellido }}</div>
+                    <div class="codigo">Código: {{ voluntario.codigo or 'N/A' }}</div>
+                    
+                    <div style="margin-top: 20px; display: grid; gap: 10px;">
+                        <div><strong>Institución:</strong> {{ voluntario.institucion or 'BOMBEROS VALENCIA' }}</div>
+                        <div><strong>Cargo Actual:</strong> {{ voluntario.cargo or 'No especificado' }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 
+            =================================================================
+            CUADRÍCULA DE INFORMACIÓN DETALLADA
+            =================================================================
+            -->
+            <div class="info-grid">
+                <!-- SECCIÓN 1: Información Personal -->
+                <div class="section-title">📋 Información Personal</div>
+                
+                <div class="info-group">
+                    <div class="info-label">Cédula de Identidad</div>
+                    <div class="info-value">{{ voluntario.cedula or 'No registrada' }}</div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Fecha de Nacimiento</div>
+                    <div class="info-value">
+                        {# 
+                           strftime formatea la fecha:
+                           %d = día (01-31)
+                           %m = mes (01-12)
+                           %Y = año (4 dígitos)
+                           Ejemplo: 10/01/1951
+                        #}
+                        {% if voluntario.fecha_nacimiento %}
+                            {{ voluntario.fecha_nacimiento.strftime('%d/%m/%Y') }}
+                        {% else %}
+                            No registrada
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Edad</div>
+                    <div class="info-value">{{ voluntario.edad or 'N/A' }} años</div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Tipo de Sangre</div>
+                    <div class="info-value" style="color: #d32f2f; font-weight: bold; font-size: 1.3em;">
+                        {{ voluntario.tipo_sangre or 'No registrado' }}
+                    </div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Teléfono</div>
+                    <div class="info-value">{{ voluntario.telefono or 'No registrado' }}</div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Correo Electrónico</div>
+                    <div class="info-value">{{ voluntario.correo or 'No registrado' }}</div>
+                </div>
+                
+                <!-- SECCIÓN 2: Información Académica -->
+                <div class="section-title">🎓 Información Académica</div>
+                
+                <div class="info-group">
+                    <div class="info-label">Nivel Académico</div>
+                    <div class="info-value">{{ voluntario.nivel_academico or 'No registrado' }}</div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Carrera / Especialidad</div>
+                    <div class="info-value">{{ voluntario.carrera or 'No registrada' }}</div>
+                </div>
+                
+                <!-- SECCIÓN 3: Trayectoria Institucional -->
+                <div class="section-title">📅 Trayectoria Institucional</div>
+                
+                <div class="info-group">
+                    <div class="info-label">Fecha de Ingreso 1</div>
+                    <div class="info-value">
+                        {% if voluntario.fecha_ingreso_1 %}
+                            {{ voluntario.fecha_ingreso_1.strftime('%d/%m/%Y') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Fecha de Egreso 1</div>
+                    <div class="info-value">
+                        {% if voluntario.fecha_egreso_1 %}
+                            {{ voluntario.fecha_egreso_1.strftime('%d/%m/%Y') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Fecha de Ingreso 2</div>
+                    <div class="info-value">
+                        {% if voluntario.fecha_ingreso_2 %}
+                            {{ voluntario.fecha_ingreso_2.strftime('%d/%m/%Y') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Fecha de Egreso 2</div>
+                    <div class="info-value">
+                        {% if voluntario.fecha_egreso_2 %}
+                            {{ voluntario.fecha_egreso_2.strftime('%d/%m/%Y') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Última Fecha de Ingreso</div>
+                    <div class="info-value">
+                        {% if voluntario.ultima_fecha_ingreso %}
+                            {{ voluntario.ultima_fecha_ingreso.strftime('%d/%m/%Y') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Total Años como Voluntario</div>
+                    <div class="info-value" style="color: #1e3c72; font-weight: bold;">
+                        {{ voluntario.total_anos_vol or '0' }} años
+                    </div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Último Ascenso</div>
+                    <div class="info-value">{{ voluntario.ultimo_ascenso or 'No registrado' }}</div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Orden General</div>
+                    <div class="info-value">{{ voluntario.orden_general or 'No registrada' }}</div>
+                </div>
+                
+                <!-- SECCIÓN 4: Tallas de Uniforme -->
+                <div class="section-title">👕 Tallas de Uniforme</div>
+                
+                <div class="info-group">
+                    <div class="info-label">Talla Pantalón</div>
+                    <div class="info-value">{{ voluntario.talla_pantalon or 'N/A' }}</div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Talla Camisa</div>
+                    <div class="info-value">{{ voluntario.talla_camisa or 'N/A' }}</div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Talla Botas</div>
+                    <div class="info-value">{{ voluntario.talla_botas or 'N/A' }}</div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Talla Gorra</div>
+                    <div class="info-value">{{ voluntario.talla_gorra or 'N/A' }}</div>
+                </div>
+                
+                <!-- SECCIÓN 5: Observaciones (solo si hay) -->
+                {% if voluntario.observaciones %}
+                <div class="info-group full-width">
+                    <div class="info-label">Observaciones</div>
+                    <div class="observaciones-box">
+                        {{ voluntario.observaciones }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- 
+            =================================================================
+            PIE DE PÁGINA
+            =================================================================
+            -->
+            <div style="margin-top: 40px; text-align: center; color: #999; font-size: 0.9em; border-top: 1px solid #eee; padding-top: 20px;">
+                <p>Documento generado el {{ now().strftime('%d/%m/%Y %I:%M %p') }} | Cuerpo de Bomberos de Valencia</p>
+                <p style="margin-top: 5px;">🚒 Disciplina y Abnegación</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

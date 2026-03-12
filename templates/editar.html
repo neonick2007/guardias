@@ -1,0 +1,558 @@
+<!-- 
+ =============================================================================
+ EDITAR.HTML - FORMULARIO PARA EDITAR VOLUNTARIO
+ =============================================================================
+ 
+ Esta plantilla genera el formulario para editar los datos de un voluntario existente.
+ 
+ Variables disponibles:
+   - voluntario: Objeto con todos los datos del voluntario a editar
+ 
+ Autor: Sistema de Gestión de Voluntarios - Cuerpo de Bomberos de Valencia
+ Versión: 1.0
+ Fecha: Marzo 2026
+ =============================================================================
+-->
+
+<!DOCTYPE html>
+<!-- Declaración del tipo de documento HTML5 -->
+<html lang="es">
+<!-- lang="es" indica que el contenido está en español -->
+
+<head>
+    <!-- METADATOS - Información sobre la página -->
+    <meta charset="UTF-8"> <!-- Codificación de caracteres UTF-8 (soporta tildes y ñ) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Adaptación a dispositivos móviles -->
+    
+    <!-- Título de la página (aparece en la pestaña del navegador) -->
+    <title>Editar Voluntario - {{ voluntario.nombre_apellido }}</title>
+    
+    <!-- ESTILOS CSS -->
+    <style>
+        /* 
+        =====================================================================
+        RESET Y ESTILOS GLOBALES
+        =====================================================================
+        */
+        
+        /* Selector universal (*) - Aplica a todos los elementos */
+        * {
+            margin: 0;      /* Elimina márgenes por defecto */
+            padding: 0;     /* Elimina rellenos por defecto */
+            box-sizing: border-box; /* El padding y border se incluyen en el ancho/alto */
+        }
+
+        /* Estilos para el cuerpo de la página */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #d32f2f 100%);
+            min-height: 100vh; /* Altura mínima igual al viewport */
+            padding: 20px;
+        }
+
+        /* 
+        =====================================================================
+        CONTENEDOR PRINCIPAL
+        =====================================================================
+        */
+        .container {
+            max-width: 1000px; /* Ancho máximo del formulario */
+            margin: 0 auto;    /* Centrado horizontal */
+        }
+
+        /* 
+        =====================================================================
+        ENCABEZADO DEL FORMULARIO
+        =====================================================================
+        */
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px 15px 0 0; /* Solo esquinas superiores redondeadas */
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #1e3c72; /* Azul marino */
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        /* 
+        =====================================================================
+        CUERPO DEL FORMULARIO
+        =====================================================================
+        */
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 15px 15px; /* Solo esquinas inferiores redondeadas */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        /* 
+        =====================================================================
+        SECCIÓN DE FOTO ACTUAL
+        =====================================================================
+        */
+        .foto-actual {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa; /* Fondo gris claro */
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .foto-actual img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover; /* La imagen cubre el espacio sin deformarse */
+            border-radius: 50%; /* Forma circular */
+            border: 4px solid #d32f2f; /* Borde rojo */
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .foto-placeholder {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            color: #999;
+            border: 4px dashed #ccc;
+            margin: 0 auto 10px;
+        }
+
+        /* 
+        =====================================================================
+        CUADRÍCULA DEL FORMULARIO
+        =====================================================================
+        */
+        .form-grid {
+            display: grid; /* Diseño de cuadrícula */
+            grid-template-columns: repeat(2, 1fr); /* 2 columnas de igual ancho */
+            gap: 20px; /* Espacio entre celdas */
+        }
+
+        /* 
+        =====================================================================
+        ESTILOS PARA CAMPOS DEL FORMULARIO
+        =====================================================================
+        */
+        .campo {
+            margin-bottom: 15px;
+        }
+
+        .campo label {
+            display: block; /* Ocupa toda la línea */
+            margin-bottom: 5px;
+            color: #1e3c72; /* Azul marino */
+            font-weight: 600; /* Semi-negrita */
+            font-size: 0.9em;
+            text-transform: uppercase; /* Texto en mayúsculas */
+            letter-spacing: 1px; /* Espaciado entre letras */
+        }
+
+        .campo input, 
+        .campo select, 
+        .campo textarea {
+            width: 100%; /* Ocupa todo el ancho disponible */
+            padding: 10px;
+            border: 2px solid #e0e0e0; /* Borde gris claro */
+            border-radius: 5px; /* Bordes ligeramente redondeados */
+            font-size: 1em;
+            transition: border-color 0.3s; /* Transición suave al enfocar */
+            background: #fafafa;
+        }
+
+        .campo input:focus, 
+        .campo select:focus, 
+        .campo textarea:focus {
+            outline: none; /* Quita el borde por defecto */
+            border-color: #d32f2f; /* Borde rojo al enfocar */
+            background: white;
+        }
+
+        .campo textarea {
+            min-height: 100px; /* Altura mínima */
+            resize: vertical; /* Permite redimensionar verticalmente */
+        }
+
+        /* Campo que ocupa todo el ancho (2 columnas) */
+        .campo-full {
+            grid-column: 1 / -1; /* Desde columna 1 hasta la última */
+        }
+
+        /* Texto pequeño de ayuda */
+        small {
+            color: #666;
+            display: block;
+            margin-top: 5px;
+            font-size: 0.85em;
+        }
+
+        /* 
+        =====================================================================
+        BOTONES DE ACCIÓN
+        =====================================================================
+        */
+        .acciones {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end; /* Botones alineados a la derecha */
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee; /* Línea separadora */
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px; /* Muy redondeado (forma de píldora) */
+            cursor: pointer; /* Manita al pasar el mouse */
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s; /* Transición suave para hover */
+            font-size: 0.9em;
+            text-decoration: none; /* Quita subrayado de enlaces */
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #d32f2f; /* Rojo */
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #b71c1c; /* Rojo más oscuro */
+            transform: translateY(-2px); /* Se eleva ligeramente */
+            box-shadow: 0 5px 15px rgba(211, 47, 47, 0.3);
+        }
+
+        .btn-secondary {
+            background: #1e3c72; /* Azul marino */
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #0f2b4f; /* Azul más oscuro */
+            transform: translateY(-2px);
+        }
+
+        .btn-cancel {
+            background: #666; /* Gris */
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #444; /* Gris más oscuro */
+            transform: translateY(-2px);
+        }
+
+        /* 
+        =====================================================================
+        MEDIA QUERIES PARA DISPOSITIVOS MÓVILES
+        =====================================================================
+        */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr; /* Una sola columna en móviles */
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.85em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- 
+        =====================================================================
+        ENCABEZADO
+        =====================================================================
+        -->
+        <div class="header">
+            <h1>✏️ Editar Voluntario</h1>
+            <p>{{ voluntario.nombre_apellido }}</p>
+        </div>
+
+        <!-- 
+        =====================================================================
+        FORMULARIO DE EDICIÓN
+        =====================================================================
+        El formulario envía los datos a /actualizar/{{ voluntario.id }} mediante POST
+        enctype="multipart/form-data" es necesario para poder subir archivos (fotos)
+        =====================================================================
+        -->
+        <div class="form-container">
+            <form action="/actualizar/{{ voluntario.id }}" method="POST" enctype="multipart/form-data">
+                
+                <!-- 
+                =================================================================
+                SECCIÓN DE FOTO ACTUAL
+                =================================================================
+                -->
+                <div class="foto-actual">
+                    {% if voluntario.foto_path %}
+                        <!-- Si tiene foto, la mostramos -->
+                        <img src="/{{ voluntario.foto_path }}" alt="Foto actual de {{ voluntario.nombre_apellido }}">
+                        <p style="color: #0f2b4f; margin-top: 10px; font-weight: bold;">Foto actual</p>
+                    {% else %}
+                        <!-- Si no tiene foto, mostramos placeholder -->
+                        <div class="foto-placeholder">📷</div>
+                        <p style="color: #666; margin-top: 10px;">Sin foto actual</p>
+                    {% endif %}
+                </div>
+
+                <!-- 
+                =================================================================
+                CUADRÍCULA DE CAMPOS DEL FORMULARIO
+                =================================================================
+                Cada campo tiene su label y su input con el valor actual del voluntario
+                Los valores se muestran usando {{ voluntario.campo or '' }}
+                El 'or '' ' evita que aparezca 'None' cuando el campo está vacío
+                =================================================================
+                -->
+
+                <div class="form-grid">
+                    <!-- CÓDIGO - Campo obligatorio -->
+                    <div class="campo">
+                        <label>Código <span style="color: #d32f2f;">*</span></label>
+                        <input type="text" name="codigo" value="{{ voluntario.codigo or '' }}" 
+                               placeholder="Ej: 08-10" required>
+                        <small>Identificador único del voluntario</small>
+                    </div>
+
+                    <!-- INSTITUCIÓN - Con valor por defecto -->
+                    <div class="campo">
+                        <label>Institución</label>
+                        <input type="text" name="institucion" value="{{ voluntario.institucion or 'BOMBEROS VALENCIA' }}">
+                    </div>
+
+                    <!-- JERARQUÍA - Select con todas las opciones -->
+                    <div class="campo">
+                        <label>Jerarquía</label>
+                        <select name="jerarquia">
+                            <option value="">Seleccionar...</option>
+                            <!-- RASOS -->
+                            <option value="BOMBERO" {% if voluntario.jerarquia == 'BOMBERO' %}selected{% endif %}>BOMBERO</option>
+                            <option value="DISTINGUIDO" {% if voluntario.jerarquia == 'DISTINGUIDO' %}selected{% endif %}>DISTINGUIDO</option>
+                            <!-- CLASES -->
+                            <option value="CABO SEGUNDO" {% if voluntario.jerarquia == 'CABO SEGUNDO' %}selected{% endif %}>CABO SEGUNDO</option>
+                            <option value="CABO PRIMERO" {% if voluntario.jerarquia == 'CABO PRIMERO' %}selected{% endif %}>CABO PRIMERO</option>
+                            <!-- SUB-OFICIALES -->
+                            <option value="SARGENTO SEGUNDO" {% if voluntario.jerarquia == 'SARGENTO SEGUNDO' %}selected{% endif %}>SARGENTO SEGUNDO</option>
+                            <option value="SARGENTO PRIMERO" {% if voluntario.jerarquia == 'SARGENTO PRIMERO' %}selected{% endif %}>SARGENTO PRIMERO</option>
+                            <option value="SARGENTO MAYOR" {% if voluntario.jerarquia == 'SARGENTO MAYOR' %}selected{% endif %}>SARGENTO MAYOR</option>
+                            <!-- OFICIALES SUBALTERNOS -->
+                            <option value="TENIENTE" {% if voluntario.jerarquia == 'TENIENTE' %}selected{% endif %}>TENIENTE</option>
+                            <option value="PRIMER TENIENTE" {% if voluntario.jerarquia == 'PRIMER TENIENTE' %}selected{% endif %}>PRIMER TENIENTE</option>
+                            <option value="CAPITAN" {% if voluntario.jerarquia == 'CAPITAN' %}selected{% endif %}>CAPITAN</option>
+                            <!-- OFICIALES SUPERIORES -->
+                            <option value="MAYOR" {% if voluntario.jerarquia == 'MAYOR' %}selected{% endif %}>MAYOR</option>
+                            <option value="TENIENTE CORONEL" {% if voluntario.jerarquia == 'TENIENTE CORONEL' %}selected{% endif %}>TENIENTE CORONEL</option>
+                            <option value="CORONEL" {% if voluntario.jerarquia == 'CORONEL' %}selected{% endif %}>CORONEL</option>
+                        </select>
+                    </div>
+
+                    <!-- NOMBRE Y APELLIDO - Campo obligatorio -->
+                    <div class="campo">
+                        <label>Nombre y Apellido <span style="color: #d32f2f;">*</span></label>
+                        <input type="text" name="nombre_apellido" value="{{ voluntario.nombre_apellido or '' }}" 
+                               placeholder="Nombre completo" required>
+                    </div>
+
+                    <!-- CÉDULA -->
+                    <div class="campo">
+                        <label>Cédula</label>
+                        <input type="text" name="cedula" value="{{ voluntario.cedula or '' }}" 
+                               placeholder="Ej: 12345678">
+                    </div>
+
+                    <!-- FECHA DE NACIMIENTO -->
+                    <div class="campo">
+                        <label>Fecha Nacimiento</label>
+                        <input type="date" name="fecha_nacimiento" value="{{ voluntario.fecha_nacimiento or '' }}">
+                    </div>
+
+                    <!-- EDAD -->
+                    <div class="campo">
+                        <label>Edad</label>
+                        <input type="number" name="edad" value="{{ voluntario.edad or '' }}">
+                    </div>
+
+                    <!-- FECHA DE INGRESO 1 -->
+                    <div class="campo">
+                        <label>Fecha Ingreso 1</label>
+                        <input type="date" name="fecha_ingreso_1" value="{{ voluntario.fecha_ingreso_1 or '' }}">
+                    </div>
+
+                    <!-- FECHA DE EGRESO 1 -->
+                    <div class="campo">
+                        <label>Fecha Egreso 1</label>
+                        <input type="date" name="fecha_egreso_1" value="{{ voluntario.fecha_egreso_1 or '' }}">
+                    </div>
+
+                    <!-- FECHA DE INGRESO 2 -->
+                    <div class="campo">
+                        <label>Fecha Ingreso 2</label>
+                        <input type="date" name="fecha_ingreso_2" value="{{ voluntario.fecha_ingreso_2 or '' }}">
+                    </div>
+
+                    <!-- FECHA DE EGRESO 2 -->
+                    <div class="campo">
+                        <label>Fecha Egreso 2</label>
+                        <input type="date" name="fecha_egreso_2" value="{{ voluntario.fecha_egreso_2 or '' }}">
+                    </div>
+
+                    <!-- ÚLTIMA FECHA DE INGRESO -->
+                    <div class="campo">
+                        <label>Última Fecha Ingreso</label>
+                        <input type="date" name="ultima_fecha_ingreso" value="{{ voluntario.ultima_fecha_ingreso or '' }}">
+                    </div>
+
+                    <!-- TOTAL AÑOS VOLUNTARIO -->
+                    <div class="campo">
+                        <label>Total Años Voluntario</label>
+                        <input type="number" name="total_anos_vol" value="{{ voluntario.total_anos_vol or '' }}">
+                    </div>
+
+                    <!-- NIVEL ACADÉMICO -->
+                    <div class="campo">
+                        <label>Nivel Académico</label>
+                        <select name="nivel_academico">
+                            <option value="">Seleccionar...</option>
+                            <option value="BCH" {% if voluntario.nivel_academico == 'BCH' %}selected{% endif %}>BCH</option>
+                            <option value="TSU" {% if voluntario.nivel_academico == 'TSU' %}selected{% endif %}>TSU</option>
+                            <option value="PROF" {% if voluntario.nivel_academico == 'PROF' %}selected{% endif %}>PROF</option>
+                            <option value="ESP" {% if voluntario.nivel_academico == 'ESP' %}selected{% endif %}>ESP</option>
+                            <option value="MAG" {% if voluntario.nivel_academico == 'MAG' %}selected{% endif %}>MAG</option>
+                            <option value="DOC" {% if voluntario.nivel_academico == 'DOC' %}selected{% endif %}>DOC</option>
+                        </select>
+                    </div>
+
+                    <!-- CARRERA -->
+                    <div class="campo">
+                        <label>Carrera</label>
+                        <input type="text" name="carrera" value="{{ voluntario.carrera or '' }}">
+                    </div>
+
+                    <!-- ÚLTIMO ASCENSO -->
+                    <div class="campo">
+                        <label>Último Ascenso</label>
+                        <input type="text" name="ultimo_ascenso" value="{{ voluntario.ultimo_ascenso or '' }}">
+                    </div>
+
+                    <!-- ORDEN GENERAL -->
+                    <div class="campo">
+                        <label>Orden General</label>
+                        <input type="text" name="orden_general" value="{{ voluntario.orden_general or '' }}">
+                    </div>
+
+                    <!-- CARGO -->
+                    <div class="campo">
+                        <label>Cargo</label>
+                        <input type="text" name="cargo" value="{{ voluntario.cargo or '' }}">
+                    </div>
+
+                    <!-- TIPO DE SANGRE -->
+                    <div class="campo">
+                        <label>Tipo Sangre</label>
+                        <input type="text" name="tipo_sangre" value="{{ voluntario.tipo_sangre or '' }}" 
+                               placeholder="Ej: O+, A-">
+                    </div>
+
+                    <!-- TELÉFONO -->
+                    <div class="campo">
+                        <label>Teléfono</label>
+                        <input type="text" name="telefono" value="{{ voluntario.telefono or '' }}" 
+                               placeholder="Ej: 04121234567">
+                    </div>
+
+                    <!-- CORREO ELECTRÓNICO -->
+                    <div class="campo">
+                        <label>Correo</label>
+                        <input type="email" name="correo" value="{{ voluntario.correo or '' }}" 
+                               placeholder="ejemplo@correo.com">
+                    </div>
+
+                    <!-- TALLA PANTALÓN -->
+                    <div class="campo">
+                        <label>Talla Pantalón</label>
+                        <input type="text" name="talla_pantalon" value="{{ voluntario.talla_pantalon or '' }}">
+                    </div>
+
+                    <!-- TALLA CAMISA -->
+                    <div class="campo">
+                        <label>Talla Camisa</label>
+                        <input type="text" name="talla_camisa" value="{{ voluntario.talla_camisa or '' }}">
+                    </div>
+
+                    <!-- TALLA BOTAS -->
+                    <div class="campo">
+                        <label>Talla Botas</label>
+                        <input type="text" name="talla_botas" value="{{ voluntario.talla_botas or '' }}">
+                    </div>
+
+                    <!-- TALLA GORRA -->
+                    <div class="campo">
+                        <label>Talla Gorra</label>
+                        <input type="text" name="talla_gorra" value="{{ voluntario.talla_gorra or '' }}">
+                    </div>
+
+                    <!-- 
+                    =========================================================
+                    CAMPO PARA SUBIR NUEVA FOTO
+                    =========================================================
+                    -->
+                    <div class="campo campo-full">
+                        <label>Cambiar Foto</label>
+                        <input type="file" name="foto" accept="image/*">
+                        <small>Formatos permitidos: JPG, JPEG, PNG, GIF. Deja vacío para mantener la foto actual.</small>
+                    </div>
+
+                    <!-- 
+                    =========================================================
+                    OBSERVACIONES - Ocupa todo el ancho
+                    =========================================================
+                    -->
+                    <div class="campo campo-full">
+                        <label>Observaciones</label>
+                        <textarea name="observaciones" placeholder="Notas adicionales sobre el voluntario...">{{ voluntario.observaciones or '' }}</textarea>
+                    </div>
+                </div>
+
+                <!-- 
+                =================================================================
+                BOTONES DE ACCIÓN
+                =================================================================
+                -->
+                <div class="acciones">
+                    <a href="/ficha/{{ voluntario.id }}" class="btn btn-cancel">Cancelar</a>
+                    <a href="/" class="btn btn-secondary">Volver al Listado</a>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

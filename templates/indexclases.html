@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bomberos Valencia - Gestión de Voluntarios</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* =========================================
+           HEADER CON LOGO
+           ========================================= */
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #d32f2f 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .logo-container {
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+        }
+
+        .logo-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .logo-placeholder {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-text h1 {
+            font-size: 2em;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .header-text p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        /* =========================================
+           TARJETAS DE ESTADÍSTICAS
+           ========================================= */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            border-left: 4px solid #d32f2f;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .stat-card.total {
+            background: linear-gradient(135deg, #1e3c72, #2a4a8a);
+            color: white;
+            border-left: 4px solid #ffd700;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+
+        /* =========================================
+           SECCIÓN DE JERARQUÍAS
+           ========================================= */
+        .jerarquias-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .jerarquias-title {
+            font-size: 1.5em;
+            color: #1e3c72;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #d32f2f;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .jerarquias-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .jerarquia-categoria {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid;
+        }
+
+        .jerarquia-categoria.rasos { border-left-color: #6c757d; }
+        .jerarquia-categoria.clases { border-left-color: #28a745; }
+        .jerarquia-categoria.suboficiales { border-left-color: #17a2b8; }
+        .jerarquia-categoria.subalternos { border-left-color: #ffc107; }
+        .jerarquia-categoria.superiores { border-left-color: #dc3545; }
+
+        .categoria-titulo {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #1e3c72;
+            text-transform: uppercase;
+        }
+
+        .rango-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .rango-item:last-child {
+            border-bottom: none;
+        }
+
+        .rango-nombre {
+            color: #333;
+        }
+
+        .rango-count {
+            background: #d32f2f;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        /* =========================================
+           BARRA DE HERRAMIENTAS
+           ========================================= */
+        .toolbar {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #d32f2f;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #b71c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+        }
+
+        .btn-secondary {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #0f2b4f;
+            transform: translateY(-2px);
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #d32f2f;
+        }
+
+        /* =========================================
+           TABLA DE VOLUNTARIOS
+           ========================================= */
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #1e3c72;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            color: #333;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .foto-miniatura {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #d32f2f;
+        }
+
+        .foto-placeholder {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: #999;
+            border: 2px dashed #ccc;
+        }
+
+        .btn-accion {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 2px;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+
+        .btn-editar {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-editar:hover {
+            background: #e0a800;
+        }
+
+        .btn-eliminar {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-eliminar:hover {
+            background: #c82333;
+        }
+
+        .btn-ficha {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .btn-ficha:hover {
+            background: #0f2b4f;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .toolbar {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            table {
+                font-size: 0.9em;
+            }
+            
+            td, th {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER CON LOGO -->
+        <div class="header">
+            <div class="logo-container">
+                <img src="/static/img/logo.png" alt="Logo Bomberos Valencia" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="logo-placeholder" style="display: none;">🚒</div>
+            </div>
+            <div class="header-text">
+                <h1>Cuerpo de Bomberos de Valencia</h1>
+                <p>Sistema de Gestión de Personal Voluntario</p>
+            </div>
+        </div>
+
+        <!-- TARJETAS DE ESTADÍSTICAS -->
+        <div class="stats-container">
+            <div class="stat-card total">
+                <div class="stat-number" id="totalVoluntarios">0</div>
+                <div class="stat-label">TOTAL VOLUNTARIOS</div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN DE JERARQUÍAS -->
+        <div class="jerarquias-section">
+            <div class="jerarquias-title">
+                <span>📋 Distribución por Jerarquías</span>
+            </div>
+            
+            <div class="jerarquias-grid" id="jerarquiasContainer">
+                <!-- Se llenará con JavaScript -->
+            </div>
+        </div>
+
+        <!-- BARRA DE HERRAMIENTAS -->
+        <div class="toolbar">
+            <button class="btn btn-primary" onclick="abrirFormulario()">
+                ➕ NUEVO VOLUNTARIO
+            </button>
+            <button class="btn btn-secondary" onclick="importarExcel()">
+                📥 IMPORTAR EXCEL
+            </button>
+            <div class="search-box">
+                <input type="text" id="buscador" placeholder="Buscar por nombre, cédula, jerarquía..." onkeyup="buscarVoluntarios()">
+                <button class="btn btn-primary" onclick="buscarVoluntarios()">🔍 Buscar</button>
+            </div>
+        </div>
+
+        <!-- TABLA DE VOLUNTARIOS -->
+        <div class="table-container">
+            <table id="tablaVoluntarios">
+                <thead>
+                    <tr>
+                        <th>Foto</th>
+                        <th>Código</th>
+                        <th>Jerarquía</th>
+                        <th>Nombre y Apellido</th>
+                        <th>Cédula</th>
+                        <th>Edad</th>
+                        <th>Teléfono</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaBody">
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px;">
+                            Cargando voluntarios...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de jerarquías
+        const jerarquiasConfig = {
+            rasos: {
+                titulo: 'RASOS',
+                rangos: ['Bombero', 'Distinguido'],
+                color: '#6c757d'
+            },
+            clases: {
+                titulo: 'CLASES',
+                rangos: ['Cabo Segundo', 'Cabo Primero'],
+                color: '#28a745'
+            },
+            suboficiales: {
+                titulo: 'SUB-OFICIALES',
+                rangos: ['Sargento Segundo', 'Sargento Primero', 'Sargento Mayor'],
+                color: '#17a2b8'
+            },
+            subalternos: {
+                titulo: 'OFICIALES SUBALTERNOS',
+                rangos: ['Teniente', 'Primer Teniente', 'Capitán'],
+                color: '#ffc107'
+            },
+            superiores: {
+                titulo: 'OFICIALES SUPERIORES',
+                rangos: ['Mayor', 'Teniente Coronel', 'Coronel'],
+                color: '#dc3545'
+            }
+        };
+
+        // Cargar voluntarios al iniciar
+        document.addEventListener('DOMContentLoaded', cargarVoluntarios);
+
+        async function cargarVoluntarios() {
+            try {
+                const response = await fetch('/api/voluntarios');
+                const voluntarios = await response.json();
+                
+                actualizarEstadisticas(voluntarios);
+                actualizarJerarquias(voluntarios);
+                actualizarTabla(voluntarios);
+            } catch (error) {
+                console.error('Error cargando voluntarios:', error);
+                document.getElementById('tablaBody').innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px; color: #d32f2f;">
+                            ❌ Error al cargar los voluntarios
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function actualizarEstadisticas(voluntarios) {
+            // Total voluntarios
+            document.getElementById('totalVoluntarios').textContent = voluntarios.length;
+        }
+
+        function actualizarJerarquias(voluntarios) {
+            const container = document.getElementById('jerarquiasContainer');
+            let html = '';
+
+            for (const [categoria, config] of Object.entries(jerarquiasConfig)) {
+                html += `<div class="jerarquia-categoria ${categoria}">`;
+                html += `<div class="categoria-titulo">${config.titulo}</div>`;
+
+                config.rangos.forEach(rango => {
+                    const count = voluntarios.filter(v => 
+                        v.jerarquia && v.jerarquia.toUpperCase() === rango.toUpperCase()
+                    ).length;
+
+                    html += `
+                        <div class="rango-item">
+                            <span class="rango-nombre">${rango}</span>
+                            <span class="rango-count">${count}</span>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        function actualizarTabla(voluntarios) {
+            const tbody = document.getElementById('tablaBody');
+            
+            if (voluntarios.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px;">
+                            No hay voluntarios registrados
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            voluntarios.forEach(v => {
+                const fotoHtml = v.foto_path 
+                    ? `<img src="/${v.foto_path}" class="foto-miniatura" alt="Foto">`
+                    : `<div class="foto-placeholder">📷</div>`;
+
+                html += `
+                    <tr>
+                        <td>${fotoHtml}</td>
+                        <td><strong>${v.codigo || 'N/A'}</strong></td>
+                        <td>${v.jerarquia || '-'}</td>
+                        <td>${v.nombre_apellido || '-'}</td>
+                        <td>${v.cedula || '-'}</td>
+                        <td>${v.edad || '-'}</td>
+                        <td>${v.telefono || '-'}</td>
+                        <td>
+                            <button class="btn-accion btn-ficha" onclick="verFicha(${v.id})">📄 Ficha</button>
+                            <button class="btn-accion btn-editar" onclick="editarVoluntario(${v.id})">✏️</button>
+                            <button class="btn-accion btn-eliminar" onclick="eliminarVoluntario(${v.id})">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function buscarVoluntarios() {
+            const texto = document.getElementById('buscador').value.toLowerCase();
+            
+            fetch('/api/voluntarios')
+                .then(res => res.json())
+                .then(voluntarios => {
+                    const filtrados = voluntarios.filter(v => 
+                        (v.nombre_apellido && v.nombre_apellido.toLowerCase().includes(texto)) ||
+                        (v.cedula && v.cedula.includes(texto)) ||
+                        (v.jerarquia && v.jerarquia.toLowerCase().includes(texto)) ||
+                        (v.codigo && v.codigo.toLowerCase().includes(texto))
+                    );
+                    actualizarTabla(filtrados);
+                });
+        }
+
+        function abrirFormulario() {
+            window.location.href = '/formulario.html';
+        }
+
+        function importarExcel() {
+            window.location.href = '/importar.html';
+        }
+
+        function verFicha(id) {
+            window.open(`/ficha/${id}`, '_blank');
+        }
+
+        function editarVoluntario(id) {
+            window.location.href = `/editar/${id}`;
+        }
+
+        function eliminarVoluntario(id) {
+            if (confirm('¿Estás seguro de eliminar este voluntario?')) {
+                fetch(`/api/voluntarios/${id}`, { method: 'DELETE' })
+                    .then(() => cargarVoluntarios());
+            }
+        }
+    </script>
+</body>
+</html>

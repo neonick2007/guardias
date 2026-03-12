@@ -1,0 +1,958 @@
+<!-- 
+=============================================================================
+ARCHIVO: templates/index.html
+DESCRIPCIÓN: Interfaz principal del sistema. Muestra listado de voluntarios,
+             estadísticas, y modal para agregar/editar registros.
+=============================================================================
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión - Bomberos Valencia</title>
+    
+    <!-- 
+    ========================================================================
+    SECCIÓN: ESTILOS CSS
+    ========================================================================
+    -->
+    <style>
+        /* Reset básico y configuración de fuentes */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        /* Contenedor principal centrado */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 
+        =====================================================================
+        ESTILOS: Header
+        =====================================================================
+        */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        
+        header h1 {
+            color: #1e3c72;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        /* 
+        =====================================================================
+        ESTILOS: Controles y botones
+        =====================================================================
+        */
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9em;
+        }
+        
+        .btn-primary {
+            background: #d32f2f;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #b71c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(211, 47, 47, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #1976d2;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #1565c0;
+            transform: translateY(-2px);
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        
+        /* 
+        =====================================================================
+        ESTILOS: Tarjetas de estadísticas
+        =====================================================================
+        */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #d32f2f;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+        
+        .stat-label {
+            color: #666;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+        }
+        
+        /* 
+        =====================================================================
+        ESTILOS: Tabla de voluntarios
+        =====================================================================
+        */
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 1px;
+        }
+        
+        tbody tr:hover {
+            background: #f5f5f5;
+        }
+        
+        /* Badges de jerarquía con colores distintivos */
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .badge-coronel { background: #ffd700; color: #333; }
+        .badge-teniente { background: #c0c0c0; color: #333; }
+        .badge-mayor { background: #cd7f32; color: white; }
+        .badge-default { background: #e0e0e0; color: #333; }
+        
+        /* Botones de acción en la tabla */
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-icon {
+            width: 35px;
+            height: 35px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .btn-view { background: #4caf50; color: white; }
+        .btn-edit { background: #ff9800; color: white; }
+        .btn-print { background: #2196f3; color: white; }
+        .btn-delete { background: #f44336; color: white; }
+        
+        .btn-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        /* 
+        =====================================================================
+        ESTILOS: Modal (Formulario de edición/creación)
+        =====================================================================
+        */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background: white;
+            max-width: 900px;
+            margin: 50px auto;
+            border-radius: 20px;
+            overflow: hidden;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-body {
+            padding: 30px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        /* Grid de formulario responsive */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+            text-transform: uppercase;
+            font-size: 0.85em;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #1976d2;
+        }
+        
+        /* Área de subida de fotos */
+        .photo-upload {
+            grid-column: 1 / -1;
+            border: 3px dashed #ddd;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .photo-upload:hover {
+            border-color: #1976d2;
+            background: #f0f7ff;
+        }
+        
+        .photo-preview {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .close {
+            font-size: 2em;
+            cursor: pointer;
+            color: white;
+        }
+        
+        /* Estilos para impresión */
+        @media print {
+            .controls, .actions, header { display: none !important; }
+            .table-container { box-shadow: none; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 
+    ========================================================================
+    SECCIÓN: Contenedor Principal
+    ========================================================================
+    -->
+    <div class="container">
+        
+        <!-- 
+        ====================================================================
+        COMPONENTE: Header con título
+        ====================================================================
+        -->
+        <header>
+            <h1>🚒 Cuerpo de Bomberos de Valencia</h1>
+            <p>Sistema de Gestión de Personal Voluntario</p>
+        </header>
+        
+        <!-- 
+        ====================================================================
+        COMPONENTE: Tarjetas de estadísticas (se actualizan dinámicamente)
+        ====================================================================
+        -->
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalVoluntarios">0</div>
+                <div class="stat-label">Total Voluntarios</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalCoroneles">0</div>
+                <div class="stat-label">Coroneles</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalOficiales">0</div>
+                <div class="stat-label">Oficiales</div>
+            </div>
+        </div>
+        
+        <!-- 
+        ====================================================================
+        COMPONENTE: Barra de controles (botones y búsqueda)
+        ====================================================================
+        -->
+        <div class="controls">
+            <button class="btn btn-primary" onclick="openModal()">+ Nuevo Voluntario</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📥 Importar Excel</button>
+            <input type="file" id="importFile" style="display:none" accept=".xlsx" onchange="importExcel(this)">
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Buscar por nombre, cédula, jerarquía..." onkeyup="searchVoluntarios()">
+        </div>
+        
+        <!-- 
+        ====================================================================
+        COMPONENTE: Tabla de voluntarios
+        ====================================================================
+        -->
+        <div class="table-container">
+            <table id="voluntariosTable">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Foto</th>
+                        <th>Nombre y Apellido</th>
+                        <th>Cédula</th>
+                        <th>Jerarquía</th>
+                        <th>Edad</th>
+                        <th>Tipo Sangre</th>
+                        <th>Teléfono</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Filas generadas dinámicamente por JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- 
+    ========================================================================
+    COMPONENTE: Modal Formulario (Agregar/Editar)
+    ========================================================================
+    -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            
+            <!-- Header del modal -->
+            <div class="modal-header">
+                <h2 id="modalTitle">Nuevo Voluntario</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            
+            <!-- Cuerpo del modal con formulario -->
+            <div class="modal-body">
+                <form id="voluntarioForm" enctype="multipart/form-data">
+                    <input type="hidden" id="voluntarioId">
+                    
+                    <!-- 
+                    ============================================================
+                    SECCIÓN: Subida de foto
+                    ============================================================
+                    -->
+                    <div class="photo-upload" onclick="document.getElementById('foto').click()">
+                        <p>📷 Click para subir foto (uniforme táctico)</p>
+                        <img id="photoPreview" class="photo-preview">
+                        <input type="file" id="foto" name="foto" accept="image/*" style="display:none" onchange="previewPhoto(this)">
+                    </div>
+                    
+                    <!-- 
+                    ============================================================
+                    SECCIÓN: Grid de campos del formulario
+                    ============================================================
+                    -->
+                    <div class="form-grid">
+                        
+                        <!-- Información básica -->
+                        <div class="form-group">
+                            <label>Código</label>
+                            <input type="text" name="codigo" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Institución</label>
+                            <input type="text" name="institucion" value="BOMBEROS VALENCIA">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Jerarquía</label>
+                            <select name="jerarquia">
+                                <option value="">Seleccione...</option>
+                                <option value="CORONEL">CORONEL</option>
+                                <option value="TENIENTE CORONEL">TENIENTE CORONEL</option>
+                                <option value="MAYOR">MAYOR</option>
+                                <option value="CAPITAN">CAPITÁN</option>
+                                <option value="TENIENTE">TENIENTE</option>
+                                <option value="SARGENTO MAYOR">SARGENTO MAYOR</option>
+                                <option value="SARGENTO PRIMERO">SARGENTO PRIMERO</option>
+                                <option value="SARGENTO SEGUNDO">SARGENTO SEGUNDO</option>
+                                <option value="CABO PRIMERO">CABO PRIMERO</option>
+                                <option value="CABO SEGUNDO">CABO SEGUNDO</option>
+                                <option value="DISTINGUIDO">DISTINGUIDO</option>
+                                <option value="BOMBERO">BOMBERO</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Nombre y Apellido</label>
+                            <input type="text" name="nombre_apellido" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Cédula</label>
+                            <input type="text" name="cedula">
+                        </div>
+                        
+                        <!-- Fechas y edad -->
+                        <div class="form-group">
+                            <label>Fecha de Nacimiento</label>
+                            <input type="date" name="fecha_nacimiento" onchange="calcularEdad()">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Edad</label>
+                            <input type="number" name="edad" id="edadInput">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Fecha Ingreso 1</label>
+                            <input type="date" name="fecha_ingreso_1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Fecha Egreso 1</label>
+                            <input type="date" name="fecha_egreso_1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Fecha Ingreso 2</label>
+                            <input type="date" name="fecha_ingreso_2">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Fecha Egreso 2</label>
+                            <input type="date" name="fecha_egreso_2">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Última Fecha Ingreso</label>
+                            <input type="date" name="ultima_fecha_ingreso">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Total Años Voluntario</label>
+                            <input type="number" name="total_anos_vol">
+                        </div>
+                        
+                        <!-- Información académica -->
+                        <div class="form-group">
+                            <label>Nivel Académico</label>
+                            <select name="nivel_academico">
+                                <option value="">Seleccione...</option>
+                                <option value="BCH">BCH (Bachiller)</option>
+                                <option value="TSU">TSU (Técnico Superior)</option>
+                                <option value="PROF">PROF (Profesional)</option>
+                                <option value="ESP">ESP (Especialista)</option>
+                                <option value="MAG">MAG (Magister)</option>
+                                <option value="DOC">DOC (Doctor)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Carrera</label>
+                            <input type="text" name="carrera">
+                        </div>
+                        
+                        <!-- Información institucional -->
+                        <div class="form-group">
+                            <label>Último Ascenso</label>
+                            <input type="text" name="ultimo_ascenso">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Orden General</label>
+                            <input type="text" name="orden_general">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Cargo</label>
+                            <input type="text" name="cargo">
+                        </div>
+                        
+                        <!-- Información médica y contacto -->
+                        <div class="form-group">
+                            <label>Tipo de Sangre</label>
+                            <select name="tipo_sangre">
+                                <option value="">Seleccione...</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Teléfono</label>
+                            <input type="text" name="telefono">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Correo</label>
+                            <input type="email" name="correo">
+                        </div>
+                        
+                        <!-- Tallas de uniforme -->
+                        <div class="form-group">
+                            <label>Talla Pantalón</label>
+                            <input type="text" name="talla_pantalon">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Talla Camisa</label>
+                            <input type="text" name="talla_camisa">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Talla Botas</label>
+                            <input type="text" name="talla_botas">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Talla Gorra</label>
+                            <input type="text" name="talla_gorra">
+                        </div>
+                        
+                        <!-- Observaciones (ocupa todo el ancho) -->
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>Observaciones</label>
+                            <textarea name="observaciones" rows="3"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Botones de acción del formulario -->
+                    <div style="margin-top: 20px; text-align: right;">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 
+    ========================================================================
+    SECCIÓN: JAVASCRIPT - Lógica de la aplicación
+    ========================================================================
+    -->
+    <script>
+        // ---------------------------------------------------------------------
+        // VARIABLES GLOBALES
+        // ---------------------------------------------------------------------
+        let voluntarios = [];      // Almacena todos los voluntarios cargados
+        let editingId = null;      // ID del voluntario en edición (null si es nuevo)
+        
+        // ---------------------------------------------------------------------
+        // INICIALIZACIÓN: Cargar datos cuando el DOM está listo
+        // ---------------------------------------------------------------------
+        document.addEventListener('DOMContentLoaded', loadVoluntarios);
+        
+        // ---------------------------------------------------------------------
+        // FUNCIÓN: loadVoluntarios()
+        // DESCRIPCIÓN: Obtiene todos los voluntarios del servidor vía API
+        // ---------------------------------------------------------------------
+        async function loadVoluntarios() {
+            try {
+                const response = await fetch('/api/voluntarios');
+                voluntarios = await response.json();
+                renderTable(voluntarios);
+                updateStats();
+            } catch (error) {
+                console.error('Error cargando voluntarios:', error);
+                alert('Error al cargar los datos. Por favor recargue la página.');
+            }
+        }
+        
+        // ---------------------------------------------------------------------
+        // FUNCIÓN: renderTable(data)
+        // DESCRIPCIÓN: Renderiza la tabla HTML con los datos proporcionados
+        // PARÁMETRO: data - Array de objetos voluntario
+        // ---------------------------------------------------------------------
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            data.forEach(v => {
+                const tr = document.createElement('tr');
+                const badgeClass = getBadgeClass(v.jerarquia);
+                
+                // Mostrar foto o placeholder
+                const fotoHtml = v.foto_path ? 
+                    `<img src="${v.foto_path}" style="width:50px;height:50px;object-fit:cover;border-radius:50%;">` : 
+                    `<div style="width:50px;height:50px;background:#ddd;border-radius:50%;display:flex;align-items:center;justify-content:center;">📷</div>`;
+                
+                // Construir fila HTML
+                tr.innerHTML = `
+                    <td>${v.codigo || '-'}</td>
+                    <td>${fotoHtml}</td>
+                    <td><strong>${v.nombre_apellido}</strong></td>
+                    <td>${v.cedula || '-'}</td>
+                    <td><span class="badge ${badgeClass}">${v.jerarquia || '-'}</span></td>
+                    <td>${v.edad || '-'}</td>
+                    <td>${v.tipo_sangre || '-'}</td>
+                    <td>${v.telefono || '-'}</td>
+                    <td class="actions">
+                        <button class="btn-icon btn-view" onclick="viewFicha(${v.id})" title="Ver Ficha">👁</button>
+                        <button class="btn-icon btn-edit" onclick="editVoluntario(${v.id})" title="Editar">✏</button>
+                        <button class="btn-icon btn-print" onclick="printFicha(${v.id})" title="Imprimir">🖨</button>
+                        <button class="btn-icon btn-delete" onclick="deleteVoluntario(${v.id})" title="Eliminar">🗑</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        // ---------------------------------------------------------------------
+        // FUNCIÓN: getBadgeClass(jerarquia)
+        // DESCRIPCIÓN: Retorna la clase CSS según la jerarquía para colorear badges
+        // ---------------------------------------------------------------------
+        function getBadgeClass(jerarquia) {
+            if (!jerarquia) return 'badge-default';
+            if (jerarquia.includes('CORONEL')) return 'badge-coronel';
+            if (jerarquia.includes('TENIENTE') || jerarquia.includes('MAYOR')) return 'badge-teniente';
+            return 'badge-default';
+        }
+        
+        // ---------------------------------------------------------------------
+        // FUNCIÓN: updateStats()
+        // DESCRIPCIÓN: Actualiza las tarjetas de estadísticas superiores
+        // ---------------------------------------------------------------------
+        function updateStats() {
+            document.getElementById('totalVoluntarios').textContent = voluntarios.length;
+            document.getElementById('totalCoroneles').textContent = 
+                voluntarios.filter(v => v.jerarquia && v.jerarquia.includes('CORONEL')).length;
+            document.getElementById('totalOficiales').textContent = 
+                voluntarios.filter(v => v.jerarquia && ['MAYOR', 'CAPITAN', 'TENIENTE'].some(j => v.jerarquia.includes(j))).length;
+        }
+        
+        // ---------------------------------------------------------------------
+        // FUNCIÓN: searchVoluntarios()
+        // DESCRIPCIÓN: Filtra la tabla según el texto ingresado en la búsqueda
+        // ---------------------------------------------------------------------
+        function searchVoluntarios() {
+            const query = document.getElementById('searchBox').value.toLowerCase();
+            const filtered = voluntarios.filter(v => 
+                (v.nombre_apellido && v.nombre_apellido.toLowerCase().includes(query)) ||
+                (v.cedula && v.cedula.includes(query)) ||
+                (v.jerarquia && v.jerarquia.toLowerCase().includes(query)) ||
+                (v.codigo && v.codigo.toLowerCase().includes(query))
+            );
+            renderTable(filtered);
+        }
+        
+        // ---------------------------------------------------------------------
+        // FUNCIÓN: openModal(id)
+        // DESCRIPCIÓN: Abre el modal para crear nuevo o editar existente
+        // PARÁMETRO: id - Opcional. Si se proporciona, carga datos para edición
+        // ---------------------------------------------------------------------
+        function openModal(id = null) {
+            document.getElementById('modal').style.display = 'block';
+            document.getElementById('voluntarioForm').reset();
+            document.getElementById('photoPreview').style.display = 'none';
+            editingId = id;
+            
+            if (id) {
+                // Modo edición: Cargar datos del voluntario
+                document.getElementById('modalTitle').textContent = 'Editar Voluntario';
+                const v = voluntarios.find(vol => vol.id === id);
+                if (v) {
+                    // Llenar formulario con datos existentes
+                    Object.keys(v).forEach(key => {
+                        const input = document.querySelector(`[name="${key}"]`);
+                        if (input && v[key]) {
+                            if (input.type === 'date') {
+                                input.value = v[key];
+                            } else {
+                                input.value = v[key];
+                            }
+                        }
+                    });
+                    // Mostrar foto si existe
+                    if (v.foto_path) {
+                        document.getElementById('photoPreview').src = v.foto_path;
+                        document.getElementById('photoPreview').style.display = 'block';
+                    }
+                }
+            } else {
+                // Modo creación
+                document.getElementById('modalTitle').textContent = 'Nuevo Voluntario';
+            }
+        }
+        
+        // ---------------------------------------------------------------------
+        // FUNCIÓN: closeModal()
+        // DESCRIPCIÓN: Cierra el modal y limpia el estado de edición
+        // ---------------------------------------------------------------------
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+            editingId = null;
+        }
+        
+        // ---------------------------------------------------------------------
+        // FUNCIÓN: previewPhoto(input)
+        // DESCRIPCIÓN: Muestra preview de la foto seleccionada antes de subir
+        // ---------------------------------------------------------------------
+        function previewPhoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('photoPreview').src = e.target.result;
+                    document.getElementById('photoPreview').style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        // ---------------------------------------------------------------------
+        // FUNCIÓN: calcularEdad()
+        // DESCRIPCIÓN: Calcula automáticamente la edad desde la fecha de nacimiento
+        // ---------------------------------------------------------------------
+        function calcularEdad() {
+            const fechaNac = document.querySelector('[name="fecha_nacimiento"]').value;
+            if (fechaNac) {
+                const hoy = new Date();
+                const nacimiento = new Date(fechaNac);
+                let edad = hoy.getFullYear() - nacimiento.getFullYear();
+                const mes = hoy.getMonth() - nacimiento.getMonth();
+                if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+                    edad--;
+                }
+                document.getElementById('edadInput').value = edad;
+            }
+        }
+        
+        // ---------------------------------------------------------------------
+        // EVENTO: Submit del formulario (Crear o Actualizar)
+        // ---------------------------------------------------------------------
+        document.getElementById('voluntarioForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            // Determinar URL y método según si es edición o creación
+            const url = editingId ? `/api/voluntarios/${editingId}` : '/api/voluntarios';
+            const method = editingId ? 'PUT' : 'POST';
+            
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    closeModal();
+                    loadVoluntarios();  // Recargar tabla
+                } else {
+                    alert('Error guardando el voluntario. Verifique los datos.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error de conexión con el servidor.');
+            }
+        });
+        
+        // ---------------------------------------------------------------------
+        // FUNCIÓN: editVoluntario(id)
+        // DESCRIPCIÓN: Abre modal en modo edición para el ID especificado
+        // ---------------------------------------------------------------------
+        function editVoluntario(id) {
+            openModal(id);
+        }
+        
+        // ---------------------------------------------------------------------
+        // FUNCIÓN: viewFicha(id)
+        // DESCRIPCIÓN: Abre ficha del voluntario en nueva pestaña
+        // ---------------------------------------------------------------------
+        function viewFicha(id) {
+            window.open(`/ficha/${id}`, '_blank');
+        }
+        
+        // ---------------------------------------------------------------------
+        // FUNCIÓN: printFicha(id)
+        // DESCRIPCIÓN: Abre ficha en modo impresión
+        // ---------------------------------------------------------------------
+        function printFicha(id) {
+            window.open(`/ficha/${id}?print=true`, '_blank');
+        }
+        
+        // ---------------------------------------------------------------------
+        // FUNCIÓN: deleteVoluntario(id)
+        // DESCRIPCIÓN: Elimina un voluntario después de confirmación
+        // ---------------------------------------------------------------------
+        async function deleteVoluntario(id) {
+            if (!confirm('¿Está seguro de eliminar este registro? Esta acción no se puede deshacer.')) return;
+            
+            try {
+                const response = await fetch(`/api/voluntarios/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadVoluntarios();  // Recargar tabla
+                } else {
+                    alert('Error al eliminar el registro.');
+                }
+            } catch (error) {
+                console.error('Error eliminando:', error);
+                alert('Error de conexión.');
+            }
+        }
+        
+        // ---------------------------------------------------------------------
+        // FUNCIÓN: importExcel(input)
+        // DESCRIPCIÓN: Importa datos desde archivo Excel seleccionado
+        // ---------------------------------------------------------------------
+        async function importExcel(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch('/importar-excel', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (response.ok) {
+                    alert(`✅ Importados ${result.importados} registros exitosamente`);
+                    loadVoluntarios();
+                } else {
+                    alert(`❌ Error: ${result.error}`);
+                }
+            } catch (error) {
+                console.error('Error importando:', error);
+                alert('Error al procesar el archivo Excel.');
+            }
+        }
+        
+        // ---------------------------------------------------------------------
+        // EVENTO: Cerrar modal al hacer click fuera del contenido
+        // ---------------------------------------------------------------------
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,644 @@
+<!-- 
+ =============================================================================
+ FICHA.HTML - PLANTILLA PARA FICHA INDIVIDUAL DE VOLUNTARIO
+ =============================================================================
+ 
+ Esta plantilla genera la ficha imprimible de cada voluntario con formato oficial.
+ 
+ Variables disponibles:
+   - voluntario: Objeto con todos los datos del voluntario
+   - now: Función datetime.now() para mostrar fecha actual
+ 
+ Autor: Sistema de Gestión de Voluntarios - Cuerpo de Bomberos de Valencia
+ Versión: 3.0 (CON LOGO VISIBLE EN IMPRESIÓN)
+ Fecha: Marzo 2026
+ =============================================================================
+-->
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha - {{ voluntario.nombre_apellido }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+
+        .ficha-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        /* 
+        =====================================================================
+        ENCABEZADO CON LOGO - VISIBLE SIEMPRE
+        =====================================================================
+        */
+        .ficha-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #d32f2f 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+        }
+
+        /* Contenedor del logo - siempre visible */
+        .logo-container {
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            /* Asegurar que se imprima */
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .logo-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            /* Asegurar que la imagen se imprima */
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* Placeholder por si no carga el logo */
+        .logo-placeholder {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-text h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .header-text p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        /* El ícono de fondo solo para decoración (no interfiere con el logo) */
+        .ficha-header::before {
+            content: "🚒";
+            font-size: 3em;
+            position: absolute;
+            right: 30px;
+            /* Cambiado a derecha para no tapar el logo */
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.15;
+            /* Más transparente */
+            pointer-events: none;
+            /* No interfiere con clics */
+        }
+
+        .ficha-body {
+            padding: 30px;
+        }
+
+        .profile-section {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 3px solid #eee;
+        }
+
+        .photo-container {
+            flex-shrink: 0;
+        }
+
+        .photo-container img {
+            width: 200px;
+            height: 250px;
+            object-fit: cover;
+            border: 5px solid #1e3c72;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .photo-placeholder {
+            width: 200px;
+            height: 250px;
+            background: #e0e0e0;
+            border: 5px dashed #999;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            color: #999;
+        }
+
+        .main-info {
+            flex: 1;
+        }
+
+        .jerarquia-badge {
+            display: inline-block;
+            background: #d32f2f;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .name {
+            font-size: 2em;
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .codigo {
+            font-size: 1.2em;
+            color: #666;
+            font-family: monospace;
+            background: #f0f0f0;
+            padding: 5px 15px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .info-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #1e3c72;
+        }
+
+        .info-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .info-label {
+            font-size: 0.85em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 1.1em;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .section-title {
+            grid-column: 1 / -1;
+            font-size: 1.3em;
+            color: #1e3c72;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #1e3c72;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .observaciones-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .print-controls {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-print {
+            background: #d32f2f;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: #b71c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(211, 47, 47, 0.4);
+        }
+
+        .btn-secondary {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #0f2b4f;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(30, 60, 114, 0.4);
+        }
+
+        .btn-cancel {
+            background: #666;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #444;
+            transform: translateY(-2px);
+        }
+
+        .btn-listado {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-listado:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        /* 
+        =====================================================================
+        ESTILOS DE IMPRESIÓN - LOGO VISIBLE
+        =====================================================================
+        */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .print-controls {
+                display: none !important;
+            }
+
+            .ficha-container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+
+            .ficha-header {
+                background: #1e3c72 !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Asegurar que el logo se imprima */
+            .logo-container {
+                background: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                border: 1px solid #ccc;
+                /* Borde sutil para definir el logo */
+            }
+
+            .logo-container img {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* El ícono de fondo más tenue al imprimir */
+            .ficha-header::before {
+                opacity: 0.1;
+            }
+
+            /* Asegurar que los colores de las etiquetas se impriman */
+            .jerarquia-badge {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .info-group {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 
+    =========================================================================
+    CONTROLES DE IMPRESIÓN Y NAVEGACIÓN (NO SE IMPRIMEN)
+    =========================================================================
+    -->
+    <div class="print-controls">
+        <button class="btn btn-print" onclick="window.print()">🖨️ IMPRIMIR</button>
+        <a href="/editar/{{ voluntario.id }}" class="btn btn-secondary">✏️ EDITAR</a>
+        <a href="/" class="btn btn-listado">📋 LISTADO</a>
+        <button class="btn btn-cancel" onclick="if(!window.close()){ window.location.href='/'; }">✕ CERRAR</button>
+    </div>
+
+    <!-- 
+    =========================================================================
+    CONTENEDOR PRINCIPAL DE LA FICHA
+    =========================================================================
+    -->
+    <div class="ficha-container">
+        <!-- 
+        =====================================================================
+        ENCABEZADO CON LOGO INSTITUCIONAL (VISIBLE EN PANTALLA E IMPRESIÓN)
+        =====================================================================
+        -->
+        <div class="ficha-header">
+            <div class="logo-container">
+                <img src="/static/img/logo.png" alt="Logo Cuerpo de Bomberos de Valencia"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="logo-placeholder" style="display: none;">🚒</div>
+            </div>
+            <div class="header-text">
+                <h1>Cuerpo de Bomberos de Valencia</h1>
+                <p>Ficha del Personal Voluntario</p>
+            </div>
+        </div>
+
+        <!-- 
+        =====================================================================
+        CUERPO DE LA FICHA
+        =====================================================================
+        -->
+        <div class="ficha-body">
+            <!-- 
+            =================================================================
+            SECCIÓN DE PERFIL
+            =================================================================
+            -->
+            <div class="profile-section">
+                <!-- Contenedor de la foto del voluntario -->
+                <div class="photo-container">
+                    {% if voluntario.foto_path %}
+                    <!-- Si hay foto, la mostramos -->
+                    <img src="/{{ voluntario.foto_path }}" alt="Foto de {{ voluntario.nombre_apellido }}">
+                    {% else %}
+                    <!-- Si no hay foto, mostramos un placeholder -->
+                    <div class="photo-placeholder">📷</div>
+                    {% endif %}
+                </div>
+
+                <!-- Información principal del voluntario -->
+                <div class="main-info">
+                    <div class="jerarquia-badge">{{ voluntario.jerarquia or 'SIN JERARQUÍA' }}</div>
+                    <div class="name">{{ voluntario.nombre_apellido }}</div>
+                    <div class="codigo">CÓDIGO: {{ voluntario.codigo or 'N/A' }}</div>
+
+                    <div style="margin-top: 20px; display: grid; gap: 10px;">
+                        <div><strong>INSTITUCIÓN:</strong> {{ voluntario.institucion or 'BOMBEROS VALENCIA' }}</div>
+                        <div><strong>CARGO ACTUAL:</strong> {{ voluntario.cargo or 'NO ESPECIFICADO' }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 
+            =================================================================
+            CUADRÍCULA DE INFORMACIÓN DETALLADA
+            =================================================================
+            -->
+            <div class="info-grid">
+                <!-- SECCIÓN 1: Información Personal -->
+                <div class="section-title">📋 INFORMACIÓN PERSONAL</div>
+
+                <div class="info-group">
+                    <div class="info-label">CÉDULA DE IDENTIDAD</div>
+                    <div class="info-value">{{ voluntario.cedula or 'NO REGISTRADA' }}</div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">FECHA DE NACIMIENTO</div>
+                    <div class="info-value">
+                        {% if voluntario.fecha_nacimiento %}
+                        {{ voluntario.fecha_nacimiento.strftime('%d/%m/%Y') }}
+                        {% else %}
+                        NO REGISTRADA
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">EDAD</div>
+                    <div class="info-value">{{ voluntario.edad or 'N/A' }} AÑOS</div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">TIPO DE SANGRE</div>
+                    <div class="info-value" style="color: #d32f2f; font-weight: bold; font-size: 1.3em;">
+                        {{ voluntario.tipo_sangre or 'NO REGISTRADO' }}
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">TELÉFONO</div>
+                    <div class="info-value">{{ voluntario.telefono or 'NO REGISTRADO' }}</div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">CORREO ELECTRÓNICO</div>
+                    <div class="info-value">{{ voluntario.correo or 'NO REGISTRADO' }}</div>
+                </div>
+
+                <!-- SECCIÓN 2: Información Académica -->
+                <div class="section-title">🎓 INFORMACIÓN ACADÉMICA</div>
+
+                <div class="info-group">
+                    <div class="info-label">NIVEL ACADÉMICO</div>
+                    <div class="info-value">{{ voluntario.nivel_academico or 'NO REGISTRADO' }}</div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">CARRERA / ESPECIALIDAD</div>
+                    <div class="info-value">{{ voluntario.carrera or 'NO REGISTRADA' }}</div>
+                </div>
+
+                <!-- SECCIÓN 3: Trayectoria Institucional -->
+                <div class="section-title">📅 TRAYECTORIA INSTITUCIONAL</div>
+
+                <div class="info-group">
+                    <div class="info-label">FECHA DE INGRESO 1</div>
+                    <div class="info-value">
+                        {% if voluntario.fecha_ingreso_1 %}
+                        {{ voluntario.fecha_ingreso_1.strftime('%d/%m/%Y') }}
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">FECHA DE EGRESO 1</div>
+                    <div class="info-value">
+                        {% if voluntario.fecha_egreso_1 %}
+                        {{ voluntario.fecha_egreso_1.strftime('%d/%m/%Y') }}
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">FECHA DE INGRESO 2</div>
+                    <div class="info-value">
+                        {% if voluntario.fecha_ingreso_2 %}
+                        {{ voluntario.fecha_ingreso_2.strftime('%d/%m/%Y') }}
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">FECHA DE EGRESO 2</div>
+                    <div class="info-value">
+                        {% if voluntario.fecha_egreso_2 %}
+                        {{ voluntario.fecha_egreso_2.strftime('%d/%m/%Y') }}
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">ÚLTIMA FECHA DE INGRESO</div>
+                    <div class="info-value">
+                        {% if voluntario.ultima_fecha_ingreso %}
+                        {{ voluntario.ultima_fecha_ingreso.strftime('%d/%m/%Y') }}
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">TOTAL AÑOS COMO VOLUNTARIO</div>
+                    <div class="info-value" style="color: #1e3c72; font-weight: bold;">
+                        {{ voluntario.total_anos_vol or '0' }} AÑOS
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">ÚLTIMO ASCENSO</div>
+                    <div class="info-value">{{ voluntario.ultimo_ascenso or 'NO REGISTRADO' }}</div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">ORDEN GENERAL</div>
+                    <div class="info-value">{{ voluntario.orden_general or 'NO REGISTRADA' }}</div>
+                </div>
+
+                <!-- SECCIÓN 4: Tallas de Uniforme -->
+                <div class="section-title">👕 TALLAS DE UNIFORME</div>
+
+                <div class="info-group">
+                    <div class="info-label">TALLA PANTALÓN</div>
+                    <div class="info-value">{{ voluntario.talla_pantalon or 'N/A' }}</div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">TALLA CAMISA</div>
+                    <div class="info-value">{{ voluntario.talla_camisa or 'N/A' }}</div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">TALLA BOTAS</div>
+                    <div class="info-value">{{ voluntario.talla_botas or 'N/A' }}</div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">TALLA GORRA</div>
+                    <div class="info-value">{{ voluntario.talla_gorra or 'N/A' }}</div>
+                </div>
+
+                <!-- SECCIÓN 5: Observaciones (solo si hay) -->
+                {% if voluntario.observaciones %}
+                <div class="info-group full-width">
+                    <div class="info-label">OBSERVACIONES</div>
+                    <div class="observaciones-box">
+                        {{ voluntario.observaciones }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- 
+            =================================================================
+            PIE DE PÁGINA
+            =================================================================
+            -->
+            <div
+                style="margin-top: 40px; text-align: center; color: #999; font-size: 0.9em; border-top: 1px solid #eee; padding-top: 20px;">
+                <p>DOCUMENTO GENERADO EL {{ now().strftime('%d/%m/%Y %I:%M %p') }} | CUERPO DE BOMBEROS DE VALENCIA</p>
+                <p style="margin-top: 5px;">🚒 DISCIPLINA Y ABNEGACIÓN</p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
